@@ -15,22 +15,29 @@ mission(weapon, gang_hideout).
 
 path(construction_site_south_gate, n, construction_site).
 path(construction_site, s, construction_site_south_gate).
-path(construction_site, e, row_of_toolboxes).
-path(row_of_toolboxes, w, construction_site).
-path(construction_site, w, building_site).
-path(building_site, e, construction_site).
+path(construction_site, e, row_of_containers).
+path(row_of_containers, w, construction_site).
+path(row_of_containers, e, construction_site_east_gate).
+path(construction_site_east_gate, w, row_of_containers).
 
-path(row_of_toolboxes, e, toolbox1).
-path(toolbox1, w, row_of_toolboxes).
-path(toolbox1, e, toolbox2).
-path(toolbox2, w, toolbox1).
-path(toolbox2, e, toolbox3).
-path(toolbox3, w, toolbox2).
+at("white container", row_of_containers).
+at("green container", row_of_containers).
+at("blue container", row_of_containers).
+at("red container", row_of_containers).
+at("black container", row_of_containers).
+at("yellow container", row_of_containers).
+
+at("steel beams", "black container").
+at("concrete mixer machine", "yellow container").
+at("crane parts", "red container").
+at("concrete drill", "blue container").
+at(windows, "white container").
+
 
 at(supervisor, construction_site_south_gate).
 at(containers, row_of_toolboxes).
-at(workers, building_site).
-at(building, building_site).
+at(workers, construction_site).
+at(building, construction_site).
 
 at(drill, toolbox2).
 
@@ -39,7 +46,7 @@ knows(supervisor, drill, 'You probably need that drill for heist. I am calling t
 knows(supervisor, toolbox, 'What is in those containers? Well, construction equipment. 
         If I remember correctly, there is a concrete mixer machine in the yellow one, 
         a concrete drill in the blue one and some steel beams in the white one. 
-        I’m not sure about other ones though').
+        I’m not sure about the other ones though').
 knows(workers, building, 'Doing great! Can’t wait to see this beauty finished! If u need sth, let us know').
 knows(workers, drill, 'Yeah, there should be some old drills in one of our toolboxes on the construction site over there').
 
@@ -122,7 +129,7 @@ drop(_) :-
 
 ask(Person, Thing) :-
         i_am_at(Place),
-        at(Person, Place),      % those 2 conditions guarantees that someone can be asked only at place they are met
+        at(Person, Place),      % those 2 conditions guarantee that someone can be asked only at place they are met
         knows(Person, Thing, Response),
         write(Person), write('says: '), write(Response),
         !, nl.
@@ -160,7 +167,7 @@ go(_) :-
         write('You can''t go that way.').
 
 
-/* This rule tells how to look about you. */
+/* This rule tells how to look around you. */
 look :-
         i_am_at(Place),
         describe(Place),
@@ -247,8 +254,9 @@ describe(construction_site) :-
         write('You can also take a closer look at construction workers, 
                 as well as the uncompleted building on your left.'), nl.
 
-describe(row_of_toolboxes) :-
-        write('You are standing in front of 3 containers.'), nl.
+describe(row_of_containers) :-
+        write('You are now standing in front of row of containers.'), nl.
+
 
 describe(toolbox1) :-
         write('You are now standing in front of container 1.'), nl,
@@ -262,7 +270,7 @@ describe(toolbox3) :-
         write('You are now standing in front of container 3.'), nl,
         write('There is silver tape here'), nl.
         
-describe(building_site) :-
+describe(construction_site) :-
         write('You are in front of building full of workers.'), nl,
         write('You can have a little chat with them.'), nl.
         
