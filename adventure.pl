@@ -34,9 +34,9 @@ at(building, building_site).
 
 at(drill, toolbox2).
 
-knows(supervisor, building, 'We are building here New lifeinvader headquarters').
+knows(supervisor, building, 'We are building new lifeinvader headquarters').
 knows(supervisor, drill, 'You probably need that drill for heist. I am calling the cops').
-knows(supervisor, tollbox, 'What is in those tollboxes? Well, construction equipment. 
+knows(supervisor, toolbox, 'What is in those containers? Well, construction equipment. 
         If I remember correctly, there is a concrete mixer machine in the yellow one, 
         a concrete drill in the blue one and some steel beams in the white one. 
         I’m not sure about other ones though').
@@ -186,13 +186,16 @@ instructions :-
         nl,
         write('Enter commands using standard Prolog syntax.'), nl,
         write('Available commands are:'), nl,
-        write('start.             -- to start the game.'), nl,
-        write('n.  s.  e.  w.     -- to go in that direction.'), nl,
-        write('take(Object).      -- to pick up an object.'), nl,
-        write('drop(Object).      -- to put down an object.'), nl,
-        write('look.              -- to look around you again.'), nl,
-        write('instructions.      -- to see this message again.'), nl,
-        write('halt.              -- to end the game and quit.'), nl,
+        write('start.             	-- to start the game.'), nl,
+        write('n.  s.  e.  w.     	-- to go in that direction.'), nl,
+	write('choose_mission(mission).	-- to start mission.'), nl,
+        write('take(Object).      	-- to pick up an object.'), nl,
+        write('drop(Object).      	-- to put down an object.'), nl,
+        write('look.              	-- to look around you again.'), nl,
+        write('instructions.      	-- to see this message again.'), nl,
+        write('ask.              	-- to ask other characters about things.'), nl,
+        write('halt.              	-- to end the game and quit.'), nl,
+
         nl.
 
 
@@ -222,8 +225,8 @@ describe(lobby) :-
 describe(construction_site_south_gate) :-
         write('You are in front of south gate of a construction site.'), nl,
         write('There is a supervisor next to you. You can talk with him.'), nl, 
-        write('On the construction site at north there workers in a building 
-                and toolboxes with various construction equipment. Find the drill.'), nl.
+        write('On the construction site at north there are workers in a building 
+                and containers with various construction equipment. Find the drill.'), nl.
 
 describe(construction_site) :-
         write('You entered construction site area.'), nl,
@@ -232,18 +235,18 @@ describe(construction_site) :-
                 as well as the uncompleted building on your left.'), nl.
 
 describe(row_of_toolboxes) :-
-        write('You are standing in front of 3 toolboxes.'), nl.
+        write('You are standing in front of 3 containers.'), nl.
 
 describe(toolbox1) :-
-        write('You are now standing in front of toolboxe 1.'), nl,
+        write('You are now standing in front of container 1.'), nl,
         write('There is wire knife here.'), nl.
 
 describe(toolbox2) :-
-        write('You are now standing in front of toolboxe 2.'), nl,
+        write('You are now standing in front of container 2.'), nl,
         write('There is drill here. You can have fun with it'), nl.
 
 describe(toolbox3) :-
-        write('You are now standing in front of toolboxe 3.'), nl,
+        write('You are now standing in front of container 3.'), nl,
         write('There is silver tape here'), nl.
         
 describe(building_site) :-
