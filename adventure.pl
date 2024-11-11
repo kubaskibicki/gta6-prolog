@@ -35,15 +35,12 @@ at(windows, "white container").
 
 
 at(supervisor, construction_site_south_gate).
-at(containers, row_of_toolboxes).
 at(workers, construction_site).
 at(building, construction_site).
 
-at(drill, toolbox2).
-
 knows(supervisor, building, 'We are building new lifeinvader headquarters').
 knows(supervisor, drill, 'You probably need that drill for heist. I am calling the cops').
-knows(supervisor, toolbox, 'What is in those containers? Well, construction equipment. 
+knows(supervisor, containers, 'What is in those containers? Well, construction equipment. 
         If I remember correctly, there is a concrete mixer machine in the yellow one, 
         a concrete drill in the blue one and some steel beams in the white one. 
         I’m not sure about the other ones though').
@@ -170,7 +167,7 @@ go(_) :-
 /* This rule tells how to look around you. */
 look :-
         i_am_at(Place),
-        describe(Place),
+        examine(Place),
         nl,
         notice_objects_at(Place),
         nl.
@@ -239,46 +236,57 @@ start :-
 
 /* These rules describe the various rooms.  Depending on
    circumstances, a room may have more than one description. */
-describe(lobby) :-
+examine(lobby) :-
         write('You are in the lobby. You can choose a mission: drill, car, or weapon.'), nl.
 
-describe(construction_site_south_gate) :-
+examine(construction_site_south_gate) :-
         write('You are in front of south gate of a construction site.'), nl,
         write('There is a supervisor next to you. You can talk with him.'), nl, 
         write('On the construction site at north there are workers in a building 
                 and containers with various construction equipment. Find the drill.'), nl.
 
-describe(construction_site) :-
+examine(construction_site) :-
         write('You entered construction site area.'), nl,
-        write('There is a row of colorful toolboxes to your right site.'), nl,
+        write('There is a row of colorful containers to your right site.'), nl,
         write('You can also take a closer look at construction workers, 
                 as well as the uncompleted building on your left.'), nl.
 
-describe(row_of_containers) :-
+examine(row_of_containers) :-
         write('You are now standing in front of row of containers.'), nl.
 
-
-describe(toolbox1) :-
-        write('You are now standing in front of container 1.'), nl,
-        write('There is wire knife here.'), nl.
-
-describe(toolbox2) :-
-        write('You are now standing in front of container 2.'), nl,
-        write('There is drill here. You can have fun with it'), nl.
-
-describe(toolbox3) :-
-        write('You are now standing in front of container 3.'), nl,
-        write('There is silver tape here'), nl.
+examine("white container") :-
+        write('You take a look inside of the white container'), nl,
+        write('Unfortunately it is empty'), nl.
         
-describe(construction_site) :-
+examine("black container") :-
+        write('You take a quick look inside of the black container'), nl,
+        write('You find steel beams inside'), nl.
+
+examine("red container") :-
+        write('You take a glance inside of the red container'), nl,
+        write('You find crane parts inside'), nl.
+
+examine("blue container") :-
+        write('You take a glimpse of contents of the blue container'), nl,
+        write('You find concrete drill inside'), nl.
+
+examine("green container") :-
+        write('You you open the door of the green container'), nl,
+        write('You find windows inside'), nl.
+
+examine("yellow container") :-
+        write('You take a look inside of the yellow container'), nl,
+        write('You find concrete mixer machine inside'), nl.
+
+
+
+examine(construction_site) :-
         write('You are in front of building full of workers.'), nl,
         write('You can have a little chat with them.'), nl.
-        
 
-
-describe(penthouse) :-
+examine(penthouse) :-
         write('You are at the penthouse. Find the car.'), nl.
 
-describe(gang_hideout) :-
+examine(gang_hideout) :-
         write('You are at the gang hideout. Find the weapon.'), nl.
 
