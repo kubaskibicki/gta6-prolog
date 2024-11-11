@@ -46,6 +46,7 @@ knows(workers, drill, 'Yeah, there should be some old drills in one of our toolb
 
 /* Rule of choosing a mission */
 choose_mission(Thing) :-
+	i_am_at(lobby),
         mission(Thing, Location),
         \+ mission_completed(Thing),  /* true if mission not completed */
         retract(i_am_at(lobby)),
@@ -55,8 +56,13 @@ choose_mission(Thing) :-
         !, nl.
 
 choose_mission(_) :-
-        write('Invalid mission or mission already completed.'), nl.
+	i_am_at(lobby),
+        write('Invalid mission name or mission already completed.'),
+	!, nl.
     
+choose_mission(_) :-
+        write('Missions can only be started in lobby.'), nl.
+
 
 /* Reguła zakończenia misji */
 complete_mission(Thing) :-
