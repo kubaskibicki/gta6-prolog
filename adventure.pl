@@ -121,8 +121,15 @@ ask(Person, Thing) :-
         write(Person), write('says: '), write(Response),
         !, nl.
 
+ask(Person, _) :-
+        i_am_at(Place),
+	at(Person, Place), 
+        write('They don\'t know anything about that.'),
+	!, nl.
+
+
 ask(_, _) :-
-        write('They don\'t know anything about that.'), nl.
+        write('There is no such person here'), nl.
 
 
 /* These rules define the direction letters as calls to go/1. */
