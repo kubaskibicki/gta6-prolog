@@ -1,6 +1,6 @@
 /* <The name of this game>, by <your name goes here>. */
 
-:- dynamic i_am_at/1, at/2, has/1.
+:- dynamic i_am_at/1, at/2, has/1, knows/3.
 :- dynamic mission/2, mission_completed/1.
 
 :- retractall(at(_, _)), retractall(i_am_at(_)), retractall(alive(_)), retractall(mission_completed(_)).
@@ -8,13 +8,40 @@
 /* Player's starting location */
 i_am_at(lobby).
 
-
 /* Missions definition */
-mission(drill, construction_site).
+mission(drill, construction_site_south_gate).
 mission(car, penthouse).
 mission(weapon, gang_hideout).
 
-path(construction_site)
+path(construction_site_south_gate, n, construction_site).
+path(construction_site, s, construction_site_south_gate).
+path(construction_site, e, row_of_toolboxes).
+path(row_of_toolboxes, w, construction_site).
+path(construction_site, w, building_site).
+path(building_site, e, construction_site).
+
+path(row_of_toolboxes, e, toolbox1).
+path(toolbox1, w, row_of_toolboxes).
+path(toolbox1, e, toolbox2).
+path(toolbox2, w, toolbox1).
+path(toolbox2, e, toolbox3).
+path(toolbox3, w, toolbox2).
+
+at(supervisor, construction_site_south_gate).
+at(containers, row_of_toolboxes).
+at(workers, building_site).
+at(building, building_site).
+
+at(drill, toolbox2).
+
+knows(supervisor, building, 'We are building here New lifeinvader headquarters').
+knows(supervisor, drill, 'You probably need that drill for heist. I am calling the cops').
+knows(supervisor, tollbox, 'What is in those tollboxes? Well, construction equipment. 
+        If I remember correctly, there is a concrete mixer machine in the yellow one, 
+        a concrete drill in the blue one and some steel beams in the white one. 
+        I’m not sure about other ones though').
+knows(workers, building, 'Doing great! Can’t wait to see this beauty finished! If u need sth, let us know').
+knows(workers, drill, 'Yeah, there should be some old drills in one of our toolboxes on the construction site over there').
 
 
 /* Rule of choosing a mission */
@@ -24,20 +51,22 @@ choose_mission(Thing) :-
         retract(i_am_at(lobby)),
         assert(i_am_at(Location)),
         write('You have chosen the mission to get the '), write(Thing), write('.'), nl,
-        look.
-    
+        look,
+        !, nl.
+
 choose_mission(_) :-
         write('Invalid mission or mission already completed.'), nl.
     
 
 /* Reguła zakończenia misji */
 complete_mission(Thing) :-
-        mission(Thing, Location),
-        /* i_am_at(Location), */
+        mission(Thing, _Location),
         has(Thing),
-        assert(mission_completed(Mission)),
-        write('You have completed the mission to get the '), write(Mission), write('.'), nl,
-        return_to_lobby.
+        assert(mission_completed(Thing)),
+        % retract(mission(_, _)),
+        write('You have completed the mission to get the '), write(Thing), write('.'), nl,
+        return_to_lobby,
+        !, nl.
     
 complete_mission(_) :-
         write('You are not at the correct location to complete this mission or did not found the correct object'), nl.
@@ -54,15 +83,15 @@ return_to_lobby :-
 
 /* These rules describe how to pick up an object. */
 take(X) :-
-        holding(X),
-        write('You''re already holding it!'),
+        has(X),
+        write('You''re already has it!'),
         !, nl.
 
 take(X) :-
         i_am_at(Place),
         at(X, Place),
         retract(at(X, Place)),
-        assert(holding(X)),
+        assert(has(X)),
         write('OK.'),
         !, nl.
 
@@ -73,9 +102,9 @@ take(_) :-
 
 /* These rules describe how to put down an object. */
 drop(X) :-
-        holding(X),
+        has(X),
         i_am_at(Place),
-        retract(holding(X)),
+        retract(has(X)),
         assert(at(X, Place)),
         write('OK.'),
         !, nl.
@@ -83,6 +112,17 @@ drop(X) :-
 drop(_) :-
         write('You aren''t holding it!'),
         nl.
+
+
+ask(Person, Thing) :-
+        i_am_at(Place),
+        at(Person, Place),      % those 2 conditions guarantees that someone can be asked only at place they are met
+        knows(Person, Thing, Response),
+        write(Person), write('says: '), write(Response),
+        !, nl.
+
+ask(_, _) :-
+        write('They don\'t know anything about that.'), nl.
 
 
 /* These rules define the direction letters as calls to go/1. */
@@ -179,8 +219,38 @@ start :-
 describe(lobby) :-
         write('You are in the lobby. You can choose a mission: drill, car, or weapon.'), nl.
 
+describe(construction_site_south_gate) :-
+        write('You are in front of south gate of a construction site.'), nl,
+        write('There is a supervisor next to you. You can talk with him.'), nl, 
+        write('On the construction site at north there workers in a building 
+                and toolboxes with various construction equipment. Find the drill.'), nl.
+
 describe(construction_site) :-
-        write('You are at the construction site. Find the drill.'), nl.
+        write('You entered construction site area.'), nl,
+        write('There is a row of colorful toolboxes to your right site.'), nl,
+        write('You can also take a closer look at construction workers, 
+                as well as the uncompleted building on your left.'), nl.
+
+describe(row_of_toolboxes) :-
+        write('You are standing in front of 3 toolboxes.'), nl.
+
+describe(toolbox1) :-
+        write('You are now standing in front of toolboxe 1.'), nl,
+        write('There is wire knife here.'), nl.
+
+describe(toolbox2) :-
+        write('You are now standing in front of toolboxe 2.'), nl,
+        write('There is drill here. You can have fun with it'), nl.
+
+describe(toolbox3) :-
+        write('You are now standing in front of toolboxe 3.'), nl,
+        write('There is silver tape here'), nl.
+        
+describe(building_site) :-
+        write('You are in front of building full of workers.'), nl,
+        write('You can have a little chat with them.'), nl.
+        
+
 
 describe(penthouse) :-
         write('You are at the penthouse. Find the car.'), nl.
