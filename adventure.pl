@@ -170,7 +170,7 @@ look :-
         examine(Place),
         nl,
         notice_objects_at(Place),
-        nl.
+        !, nl.
 
 
 /* These rules set up a loop to mention all the objects
@@ -178,7 +178,8 @@ look :-
 notice_objects_at(Place) :-
         at(X, Place),
         write('There is a '), write(X), write(' here.'), nl,
-        fail.
+	fail.
+
 
 notice_objects_at(_).
 
