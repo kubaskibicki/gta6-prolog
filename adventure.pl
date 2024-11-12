@@ -1,9 +1,11 @@
 /* <The name of this game>, by <your name goes here>. */
 
-:- dynamic i_am_at/1, at/2, has/1, knows/3.
+:- dynamic i_am_at/1, at/2, has/1, knows/3, obtainable/2.
 :- dynamic mission/2, mission_completed/1.
 
-:- retractall(at(_, _)), retractall(i_am_at(_)), retractall(alive(_)), retractall(mission_completed(_)).
+:- retractall(at(_, _)), retractall(i_am_at(_)), retractall(alive(_)), retractall(mission_completed(_)), retractall(has(_)).
+
+has(nothing).
 
 /* Player's starting location */
 i_am_at(lobby).
@@ -27,16 +29,15 @@ at("red container", row_of_containers).
 at("black container", row_of_containers).
 at("yellow container", row_of_containers).
 
-at("steel beams", "black container").
-at("concrete mixer machine", "yellow container").
-at("crane parts", "red container").
-at("concrete drill", "blue container").
-at(windows, "white container").
-
-
 at(supervisor, construction_site_south_gate).
 at(workers, construction_site).
 at(building, construction_site).
+
+obtainable(beams, row_of_containers).
+obtainable("concrete mixer machine", row_of_containers).
+obtainable("crane parts", row_of_containers).
+obtainable(drill, row_of_containers).
+obtainable(windows, row_of_containers).
 
 knows(supervisor, building, 'We are building new lifeinvader headquarters').
 knows(supervisor, drill, 'You probably need that drill for heist. I am calling the cops').
@@ -91,23 +92,38 @@ return_to_lobby :-
         look.
 
 
+
+
+
 /* These rules describe how to pick up an object. */
-take(X) :-
-        has(X),
-        write('You''re already has it!'),
+take(Thing) :-
+        has(Thing),
+        write('You already have it!'),
         !, nl.
 
-take(X) :-
+
+take(Thing) :-
+	has(nothing),
         i_am_at(Place),
-        at(X, Place),
-        retract(at(X, Place)),
-        assert(has(X)),
+        obtainable(Thing, Place),
+        assert(has(Thing)),
         write('OK.'),
         !, nl.
 
 take(_) :-
+	has(nothing),
         write('I don''t see it here.'),
-        nl.
+        !, nl.
+
+take(_) :-
+	write('You have to drop currently held item first'),
+	nl.
+
+
+
+
+
+
 
 
 /* These rules describe how to put down an object. */
@@ -115,7 +131,7 @@ drop(X) :-
         has(X),
         i_am_at(Place),
         retract(has(X)),
-        assert(at(X, Place)),
+        assert(obtainable(X, Place)),
         write('OK.'),
         !, nl.
 
@@ -243,14 +259,14 @@ examine(lobby) :-
 examine(construction_site_south_gate) :-
         write('You are in front of south gate of a construction site.'), nl,
         write('There is a supervisor next to you. You can talk with him.'), nl, 
-        write('On the construction site at north there are workers in a building 
-                and containers with various construction equipment. Find the drill.'), nl.
+        write('On the construction site at north there are workers in a building'), nl,
+        write('and containers with various construction equipment. Find the drill.'), nl.
 
 examine(construction_site) :-
         write('You entered construction site area.'), nl,
         write('There is a row of colorful containers to your right site.'), nl,
-        write('You can also take a closer look at construction workers, 
-                as well as the uncompleted building on your left.'), nl.
+        write('You can also take a closer look at construction workers'), nl,
+        write('as well as the uncompleted building on your left.'), nl.
 
 examine(row_of_containers) :-
         write('You are now standing in front of row of containers.'), nl.
