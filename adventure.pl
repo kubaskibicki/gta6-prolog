@@ -1,17 +1,17 @@
 /* <The name of this game>, by <your name goes here>. */
 
-:- dynamic i_am_at/1, at/2, has/1, knows/3, obtainable/2, current_mission/1.
+:- dynamic i_am_at/1, at/2, has/1, knows/3, obtainable/2, finish_conditions/2.
 :- dynamic mission/2, mission_completed/1.
 
 :- retractall(at(_, _)), retractall(i_am_at(_)), retractall(alive(_)), retractall(mission_completed(_)), retractall(has(_)).
 
-current_mission(nothing).
 has(nothing).
 
 /* Player's starting location */
 i_am_at(lobby).
 
-
+finish_conditions(construction_site_south_gate, drill).
+finish_conditions(construction_site_east_gate, drill).
 
 /* Missions definition */
 mission(drill, construction_site_south_gate).
@@ -74,9 +74,9 @@ choose_mission(_) :-
 
 /* Reguła zakończenia misji */
 finish_mission(Thing) :-
-	mission(Thing, Location),
-	has(Thing),
 	i_am_at(Location),
+	has(Thing),
+	finish_conditions(Location, Thing),
 	assert(mission_completed(Thing)),
 	% retract(mission(_, _)),
 	write('You have completed the mission to get the '), write(Thing), write('.'), nl,
