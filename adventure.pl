@@ -97,47 +97,46 @@ return_to_lobby :-
 
 /* These rules describe how to pick up an object. */
 take(Thing) :-
-        has(Thing),
-        write('You already have it!'),
-        !, nl.
+	has(nothing),                  % Gracz nie może mieć nic w ekwipunku
+	i_am_at(Location),             % Lokalizacja gracza
+	obtainable(Thing, Location),   % Przedmiot musi być dostępny w tej lokalizacji
+	retract(has(nothing)),         % Usuwamy informację, że gracz ma pusty ekwipunek
+	assert(has(Thing)),            % Dodajemy przedmiot do ekwipunku
+	write('You took the '), write(Thing), write('.'), nl,
+	!, nl.
 
 
+% Jeżeli gracz już coś nosi, nie może podnieść innego przedmiotu
+take(_) :-
+	has(Something), Something \= nothing,
+	write('You are already carrying something: '), write(Something), write('.'), nl,
+	!, nl.
+
+% Jeżeli w lokalizacji nie ma przedmiotu
 take(Thing) :-
-	has(nothing),
-        i_am_at(Place),
-        obtainable(Thing, Place),
-        assert(has(Thing)),
-        write('OK.'),
-        !, nl.
-
-take(_) :-
-	has(nothing),
-        write('I don''t see it here.'),
-        !, nl.
-
-take(_) :-
-	write('You have to drop currently held item first'),
-	nl.
-
-
-
+	i_am_at(Location),
+	\+ obtainable(Thing, Location),
+	write('There is no '), write(Thing), write(' here.'), nl,
+	!, nl.
 
 
 
 
 
 /* These rules describe how to put down an object. */
-drop(X) :-
-        has(X),
-        i_am_at(Place),
-        retract(has(X)),
-        assert(obtainable(X, Place)),
-        write('OK.'),
-        !, nl.
+% Reguła odpowiadająca za upuszczenie przedmiotu
+drop :-
+    has(nothing),                 % Jeżeli gracz nic nie posiada
+    write('You are not carrying anything to drop.'), nl, !. % Nie można nic upuścić
 
-drop(_) :-
-        write('You aren''t holding it!'),
-        nl.
+drop :-
+    has(Thing),                   % Gracz posiada jakiś przedmiot
+    i_am_at(Location),            % Gracz jest w określonej lokalizacji
+    retract(has(Thing)),          % Usuwamy przedmiot z ekwipunku
+    assert(has(nothing)),         % Zmieniamy stan ekwipunku na "nic"
+    assert(obtainable(Thing, Location)), % Dodajemy przedmiot do dostępnych w lokalizacji
+    write('You dropped the '), write(Thing), write(' here.'), nl.
+
 
 
 ask(Person, Thing) :-
