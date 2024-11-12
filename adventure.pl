@@ -10,6 +10,8 @@ has(nothing).
 /* Player's starting location */
 i_am_at(lobby).
 
+
+
 /* Missions definition */
 mission(drill, construction_site_south_gate).
 mission(car, penthouse).
@@ -256,6 +258,11 @@ examine(construction_site_south_gate) :-
         write('There is a supervisor next to you. You can talk with him.'), nl, 
         write('On the construction site at north there are workers in a building'), nl,
         write('and containers with various construction equipment. Find the drill.'), nl.
+
+examine(construction_site_east_gate) :-
+	write('You reached the east gate of construction site.'), nl,
+	write('There''s not much here, but this place seems like'), nl,
+	write('another escape point'), nl.
 
 examine(construction_site) :-
         write('You entered construction site area.'), nl,
