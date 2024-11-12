@@ -17,27 +17,27 @@ mission(weapon, gang_hideout).
 
 path(construction_site_south_gate, n, construction_site).
 path(construction_site, s, construction_site_south_gate).
-path(construction_site, e, row_of_containers).
-path(row_of_containers, w, construction_site).
-path(row_of_containers, e, construction_site_east_gate).
-path(construction_site_east_gate, w, row_of_containers).
+path(construction_site, e, containers).
+path(containers, w, construction_site).
+path(containers, e, construction_site_east_gate).
+path(construction_site_east_gate, w, containers).
 
-at("white container", row_of_containers).
-at("green container", row_of_containers).
-at("blue container", row_of_containers).
-at("red container", row_of_containers).
-at("black container", row_of_containers).
-at("yellow container", row_of_containers).
+at("white container", containers).
+at("green container", containers).
+at("blue container", containers).
+at("red container", containers).
+at("black container", containers).
+at("yellow container", containers).
 
 at(supervisor, construction_site_south_gate).
 at(workers, construction_site).
 at(building, construction_site).
 
-obtainable(beams, row_of_containers).
-obtainable("concrete mixer machine", row_of_containers).
-obtainable("crane parts", row_of_containers).
-obtainable(drill, row_of_containers).
-obtainable(windows, row_of_containers).
+obtainable(beams, containers).
+obtainable(barrow, containers).
+obtainable(hammers, containers).
+obtainable(drill, containers).
+obtainable(windows, containers).
 
 knows(supervisor, building, 'We are building new lifeinvader headquarters').
 knows(supervisor, drill, 'You probably need that drill for heist. I am calling the cops').
@@ -52,13 +52,13 @@ knows(workers, drill, 'Yeah, there should be some old drills in one of our toolb
 /* Rule of choosing a mission */
 choose_mission(Thing) :-
 	i_am_at(lobby),
-        mission(Thing, Location),
-        \+ mission_completed(Thing),  /* true if mission not completed */
-        retract(i_am_at(lobby)),
-        assert(i_am_at(Location)),
-        write('You have chosen the mission to get the '), write(Thing), write('.'), nl,
-        look,
-        !, nl.
+	mission(Thing, Location),
+	\+ mission_completed(Thing),  /* true if mission not completed */
+	retract(i_am_at(lobby)),
+	assert(i_am_at(Location)),
+	write('You have chosen the mission to get the '), write(Thing), write('.'), nl,
+	look,
+	!, nl.
 
 choose_mission(_) :-
 	i_am_at(lobby),
@@ -70,28 +70,27 @@ choose_mission(_) :-
 
 
 /* Reguła zakończenia misji */
-complete_mission(Thing) :-
-        mission(Thing, _Location),
-        has(Thing),
-        assert(mission_completed(Thing)),
-        % retract(mission(_, _)),
-        write('You have completed the mission to get the '), write(Thing), write('.'), nl,
-        return_to_lobby,
-        !, nl.
+finish_mission(Thing) :-
+	mission(Thing, Location),
+	has(Thing),
+	i_am_at(Location),
+	assert(mission_completed(Thing)),
+	% retract(mission(_, _)),
+	write('You have completed the mission to get the '), write(Thing), write('.'), nl,
+	return_to_lobby,
+	!, nl.
     
-complete_mission(_) :-
-        write('You are not at the correct location to complete this mission or did not found the correct object'), nl.
+finish_mission(_) :-
+	write('You are not at the correct location to complete this mission or did not found the correct object'), nl.
     
 
 /* Reguła powrotu do lobby */
 return_to_lobby :-
-        retract(i_am_at(_)),
-        assert(i_am_at(lobby)),
-        write('You finished your mission and returned to the lobby.'), nl,
-        write('Congrats. Now choose what to do next'), nl,
-        look.
-
-
+	retract(i_am_at(_)),
+	assert(i_am_at(lobby)),
+	write('You finished your mission and returned to the lobby.'), nl,
+	write('Congrats. Now choose what to do next'), nl,
+	look.
 
 
 
@@ -118,9 +117,6 @@ take(Thing) :-
 	\+ obtainable(Thing, Location),
 	write('There is no '), write(Thing), write(' here.'), nl,
 	!, nl.
-
-
-
 
 
 /* These rules describe how to put down an object. */
@@ -267,7 +263,7 @@ examine(construction_site) :-
         write('You can also take a closer look at construction workers'), nl,
         write('as well as the uncompleted building on your left.'), nl.
 
-examine(row_of_containers) :-
+examine(containers) :-
         write('You are now standing in front of row of containers.'), nl.
 
 examine("white container") :-
@@ -276,15 +272,15 @@ examine("white container") :-
         
 examine("black container") :-
         write('You take a quick look inside of the black container'), nl,
-        write('You find steel beams inside'), nl.
+        write('You find few beams inside'), nl.
 
 examine("red container") :-
         write('You take a glance inside of the red container'), nl,
-        write('You find crane parts inside'), nl.
+        write('You find hammers inside'), nl.
 
 examine("blue container") :-
         write('You take a glimpse of contents of the blue container'), nl,
-        write('You find concrete drill inside'), nl.
+        write('You find drill inside'), nl.
 
 examine("green container") :-
         write('You you open the door of the green container'), nl,
@@ -292,7 +288,7 @@ examine("green container") :-
 
 examine("yellow container") :-
         write('You take a look inside of the yellow container'), nl,
-        write('You find concrete mixer machine inside'), nl.
+        write('You find a barrow inside'), nl.
 
 
 
