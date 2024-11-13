@@ -1,6 +1,6 @@
 /* <The name of this game>, by <your name goes here>. */
 
-:- dynamic i_am_at/1, at/2, has/1, knows/3, obtainable/2, access_code/3.
+:- dynamic i_am_at/1, at/2, has/1, knows/3, obtainable/2, access_code/3, leaving/2.
 :- dynamic mission/2, mission_completed/1, finish_conditions/2.
 
 :- retractall(at(_, _)), retractall(i_am_at(_)), retractall(alive(_)).
@@ -11,16 +11,18 @@ has(nothing).
 /* Player's starting location */
 i_am_at(lobby).
 
-finish_conditions(construction_site_south_gate, drill).
-finish_conditions(construction_site_east_gate, drill).
-
-access_code(18black, mansion, "mansion frontyard").
-access_code(crowbar, terrace, house).
+/* List of finished missions */
+mission_completed([]).
 
 /* Missions definition */
 mission(drill, construction_site_south_gate).
 mission(car, mansion).
 mission(weapon, gang_hideout).
+
+finish_conditions(construction_site_south_gate, drill).
+finish_conditions(construction_site_east_gate, drill).
+
+finish_conditions("mansion frontyard", car).
 
 path(construction_site_south_gate, n, construction_site).
 path(construction_site, s, construction_site_south_gate).
@@ -52,8 +54,8 @@ at("Porsche 911", "mansion frontyard").
 at("Mercedes G63", "mansion frontyard").
 
 at("swimming pool", "mansion backyard").
-at("garden", "mansion backyard").
-at("terrace", "mansion backyard").
+at(garden, "mansion backyard").
+at(terrace, "mansion backyard").
 
 at(first_drawer, house).
 at(second_drawer, house).
@@ -67,11 +69,17 @@ obtainable(hammers, containers).
 obtainable(drill, containers).
 obtainable(windows, containers).
 
-obtainable(crowbar, "mansion backyard").
+obtainable(crowbar, "wooden outbuilding").
 
 obtainable("G63 keys", house).
 obtainable("Porsche keys", house).
 obtainable("BMW keys", house).
+
+access_code('18black', mansion, "mansion frontyard").
+access_code(crowbar, "mansion backyard", house).
+
+leaving("mansion frontyard", mansion).
+leaving(house, "mansion backyard").
 
 knows(supervisor, building, 'We are building new lifeinvader headquarters').
 knows(supervisor, drill, 'You probably need that drill for heist. I am calling the cops').
@@ -88,7 +96,8 @@ knows(workers, drill, 'Yeah, there should be some old drills in one of our toolb
 choose_mission(Thing) :-
 	i_am_at(lobby),
 	mission(Thing, Location),
-	\+ mission_completed(Thing),  /* true if mission not completed */
+        mission_completed(CompletedMissions)
+	\+ member(Thing, CompletedMissions),  /* true if mission not completed */
 	retract(i_am_at(lobby)),
 	assert(i_am_at(Location)),
 	write('You have chosen the mission to get the '), write(Thing), write('.'), nl,
@@ -110,8 +119,9 @@ finish_mission(Thing) :-
 	i_am_at(Location),
 	has(Thing),
 	finish_conditions(Location, Thing),
-	assert(mission_completed(Thing)),
-	% retract(mission(_, _)),
+        mission_completed(CompletedMissions),
+        retract(mission_completed(CompletedMissions)),
+        assert(mission_completed([Thing | CompletedMissions])),
 	write('You have completed the mission to get the '), write(Thing), write('.'), nl,
 	return_to_lobby,
 	!, nl.
@@ -168,20 +178,20 @@ drop :-
     retract(has(Thing)),          % Usuwamy przedmiot z ekwipunku
     assert(has(nothing)),         % Zmieniamy stan ekwipunku na "nic"
     assert(obtainable(Thing, Location)), % Dodajemy przedmiot do dostępnych w lokalizacji
-    write('You dropped the '), write(Thing), write(' here.'), nl.
+    write('You dropped the '), write(Thing), write(' at location: '), write(Location), nl.
 
 
 
 ask(Person, Thing) :-
-        i_am_at(Place),
-        at(Person, Place),      % those 2 conditions guarantee that someone can be asked only at place they are met
+        i_am_at(Location),
+        at(Person, Location),      % those 2 conditions guarantee that someone can be asked only at Location they are met
         knows(Person, Thing, Response),
         write(Person), write('says: '), write(Response),
         !, nl.
 
 ask(Person, _) :-
-        i_am_at(Place),
-	at(Person, Place), 
+        i_am_at(Location),
+	at(Person, Location), 
         write('They don\'t know anything about that.'),
 	!, nl.
 
@@ -191,19 +201,32 @@ ask(_, _) :-
 
 
 
-enter(Code, Place) :-
-        i_am_at(Place),
-        access_code(Code, Place, Entered_Place),
-        wirte('Access granted. You are now in '), write(Entered_Place), nl,
+enter(Code, Location) :-
+        i_am_at(Location),
+        access_code(Code, Location, Entered_Location),
+        write('Access granted. You are now in '), write(Entered_Location), nl,
         drop,   % thanks to that any equipment needed to get into some place is left outside that place
-        retract(i_am_at(Place)),
-	assert(i_am_at(Entered_Place)),
+        retract(i_am_at(Location)),
+	assert(i_am_at(Entered_Location)),
         look,
         !, nl.
 
 enter(_, _) :-
         write('Access denied'), nl.
 
+
+
+leave(Location) :-
+        i_am_at(Location),
+        leaving(Location, Exit),
+        retract(i_am_at(Location)),
+	assert(i_am_at(Exit)),
+        write('You exited '), write(Location), nl,
+        write('You are now in '), write(Exit),
+        !, nl.
+
+leave(_) :-
+        write('You are not in the closed location that can be left like that.').
 
 
 /* These rules define the direction letters as calls to go/1. */
@@ -232,18 +255,18 @@ go(_) :-
 
 /* This rule tells how to look around you. */
 look :-
-        i_am_at(Place),
-        examine(Place),
+        i_am_at(Location),
+        examine(Location),
         nl,
-        notice_objects_at(Place),
+        notice_objects_at(Location),
         !, nl.
 
 
 
 /* These rules set up a loop to mention all the objects
    in your vicinity. */
-notice_objects_at(Place) :-
-        (at(X, Place) ; obtainable(X, Place)),
+notice_objects_at(Location) :-
+        (at(X, Location) ; obtainable(X, Location)),
         write('There is a '), write(X), write(' here.'), nl,
 	fail.
 
@@ -278,17 +301,18 @@ instructions :-
 	write('choose_mission(mission).	-- to start mission.'), nl,
         write('take(Object).      	-- to pick up an object.'), nl,
         write('drop(Object).      	-- to put down an object.'), nl,
+        write('enter(Thing, Place)      -- to enter a (probably closed) Place using Thing (tool or code)'), nl,
+        write('leave(Place)             -- to leave a place only if a place was entered with use od enter() command'), nl,
         write('look.              	-- to look around you again.'), nl,
         write('instructions.      	-- to see this message again.'), nl,
         write('ask.              	-- to ask other characters about things.'), nl,
         write('halt.              	-- to end the game and quit.'), nl,
-
         nl.
 
 
 
 /* This is description of game plot */
-"game description" :-
+game_description :-
         nl,
         write('You are about to rob the biggest bank of Los Santos.'), nl,
         write('You have to be well prepared.'), nl,
@@ -302,7 +326,7 @@ instructions :-
 /* This rule prints out instructions and tells where you are. */
 start :-
         instructions,
-        "game description",
+        game_description,
         look.
 
 
@@ -358,40 +382,35 @@ examine("yellow container") :-
 
 
 
-examine("mansion") :-
-        write('You are in front of a luxury mansion in expensive 
-                neighbourhood of Los Santos - Vinewood hills.'), nl, 
+examine(mansion) :-
+        write('You are in front of a luxury mansion in expensive neighbourhood of Los Santos - Vinewood hills.'), nl, 
         write('There is a closed entrance, that requires a password.'), nl,
-        write('You look around the neighbourhood and notice, that number of the house to the left is 18, and a mailbox with an 
-                envelope sticking out of it.'), nl,
-        write('Find keys to the car you want to steal'), nl.
+        write('You look around the neighbourhood and notice, that number of the house to the left is 18, '), nl,
+        write('and a mailbox with an envelope sticking out of it.'), nl,
+        write('Find keys to the car you want to steal, take them and go to the choosen car, then you can finish mission'), nl.
 
-examine("envelope") :-
+examine(envelope) :-
         write('Dear residents of Mayfair St.'), nl,
-        write('Due to scheduled replacement of intercoms in 
-        upcoming week, we kindly inform you,that access passwords will be changed
-        to combination of your address’ number and house’s roof colour (example: 3218black).'), nl,
+        write('Due to scheduled replacement of intercoms in upcoming week, we kindly inform you, '), nl,
+        write('that access passwords will be changed to combination of your address’ number and house’s roof colour (example: 3218black).'), nl,
         write('We are sorry for the inconvenience'), nl, 
         write('Best regards'), nl,
         write('VH housing'), nl.
 
-examine("neighbourhood") :-
+examine(neighbourhood) :-
         write('You notice an interesting pattern.'), nl,
-        write('Every third house on the other side of the road has a blue roof, 
-                other ones have red roofs.'), nl,
-        write('What’s more, houses with blue roof have a black-roofed house in front of 
-                them, other ones have green roofs.'), nl,
-        write('You also notice that the leftmost house on the  
-                other side of the road has a blue roof and house number 1.'), nl,
+        write('Every third house on the other side of the road has a blue roof, other ones have red roofs.'), nl,
+        write('What’s more, houses with blue roof have a black-roofed house in front of them, other ones have green roofs.'), nl,
+        write('You also notice that the leftmost house on the other side of the road has a blue roof and house number 1.'), nl,
         write('On one side on the road there are only even house numbers, on the other only odd'), nl.
 
 examine("mansion frontyard") :-
-        write('You entered mansion frontyard.'), nl,
-        write('You notice 3 cars standing on a driveway.'), nl, 
-        write('Mercedes G63 - a quick SUV, capable of driving through more remote terrain.'), nl,
-        write('Porsche 911 - sports coupe, that can go through paved roads very quickly.'), nl,
-        write('BMW M760 - armored version that can withstand gunshots, at cost of not being too fast.'), nl,
-        write('There is also a pavement leading to the back of the house and a wooden outbuilding on the right side.'), nl.
+        write('You entered mansion frontyard.'), nl, 
+        % write('Mercedes G63 - a quick SUV, capable of driving through more remote terrain.'), nl,
+        % write('Porsche 911 - sports coupe, that can go through paved roads very quickly.'), nl,
+        % write('BMW M760 - armored version that can withstand gunshots, at cost of not being too fast.'), nl,
+        write('There is a pavement leading to the back of the house and a wooden outbuilding on the right side.'), nl,
+        write('You also notice 3 cars standing on a driveway: .'), nl.
 
 examine("BMW M760") :-
         write('An armored version of this car, that can withstand gunshots, at cost of not being too fast.'), nl.
@@ -399,19 +418,20 @@ examine("BMW M760") :-
 examine("Mercedes G63") :-
         write('A quick SUV, capable of driving through more remote terrain.'), nl.
 
-examine("Porsche 911")
+examine("Porsche 911") :-
         write('A sports coupe, that can go through paved roads very quickly.'), nl.
 
 examine("wooden outbuilding") :-
         write('You are next to the wooden outbilding. There should be some tools beside the entrance to the outbuilding'), nl.
 
 examine("mansion backyard") :-
-        write('You silently walk around the house and notice an outdoor swimming pool, a cozy garden and a terrace.'), nl.
+        write('You silently walk around the house and now are in backyard.'), nl,
+        write('You notice an outdoor swimming pool, a cozy garden and a terrace.'), nl.
 
 examine("swimming pool") :-
         write(), nl.
 
-examine("garden") :-
+examine(garden) :-
         write(), nl.
 
 examine(terrace) :-
