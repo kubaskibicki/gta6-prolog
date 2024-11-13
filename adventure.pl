@@ -151,17 +151,17 @@ take(Thing) :-
 	write('You took the '), write(Thing), write('.'), nl,
 	!, nl.
 
-% Jeżeli gracz już coś nosi, nie może podnieść innego przedmiotu
-take(_) :-
-	has(Something), Something \= nothing,
-	write('You are already carrying something: '), write(Something), write('.'), nl,
-	!, nl.
-
 % Jeżeli w lokalizacji nie ma przedmiotu
 take(Thing) :-
 	i_am_at(Location),
 	\+ obtainable(Thing, Location),
 	write('There is no '), write(Thing), write(' here.'), nl,
+	!, nl.
+
+% Jeżeli gracz już coś nosi, nie może podnieść innego przedmiotu
+take(_) :-
+	has(Something), Something \= nothing,
+	write('You are already carrying something: '), write(Something), write('.'), nl,
 	!, nl.
 
 
