@@ -31,8 +31,8 @@ path(containers, w, construction_site).
 path(containers, e, construction_site_east_gate).
 path(construction_site_east_gate, w, containers).
 
-path("mansion frontyard", e, "wooden outbuilding").
-path("wooden outbuilding", w, "mansion frontyard").
+path("mansion frontyard", e, outbuilding).
+path(outbuilding, w, "mansion frontyard").
 path("mansion frontyard", n, "mansion backyard").
 path("mansion backyard", s, "mansion frontyard").
 
@@ -47,13 +47,14 @@ at(supervisor, construction_site_south_gate).
 at(workers, construction_site).
 at(building, construction_site).
 
+at(neighbourhood, mansion).
 at(envelope, mansion).
 
-at("BMW M760", "mansion frontyard").
-at("Porsche 911", "mansion frontyard").
-at("Mercedes G63", "mansion frontyard").
+at(bmw, "mansion frontyard").
+at(porsche, "mansion frontyard").
+at(jeep, "mansion frontyard").
 
-at("swimming pool", "mansion backyard").
+at(pool, "mansion backyard").
 at(garden, "mansion backyard").
 at(terrace, "mansion backyard").
 
@@ -69,13 +70,13 @@ obtainable(hammers, containers).
 obtainable(drill, containers).
 obtainable(windows, containers).
 
-obtainable(crowbar, "wooden outbuilding").
-
-obtainable("G63 keys", house).
+obtainable(drill, outbuilding).
+obtainable(crowbar, outbuilding).
+obtainable("Jeep keys", house).
 obtainable("Porsche keys", house).
 obtainable("BMW keys", house).
 
-access_code('18black', mansion, "mansion frontyard").
+access_code(black20, mansion, "mansion frontyard").
 access_code(crowbar, "mansion backyard", house).
 
 leaving("mansion frontyard", mansion).
@@ -96,7 +97,7 @@ knows(workers, drill, 'Yeah, there should be some old drills in one of our toolb
 choose_mission(Thing) :-
 	i_am_at(lobby),
 	mission(Thing, Location),
-        mission_completed(CompletedMissions)
+        mission_completed(CompletedMissions),
 	\+ member(Thing, CompletedMissions),  /* true if mission not completed */
 	retract(i_am_at(lobby)),
 	assert(i_am_at(Location)),
@@ -406,33 +407,36 @@ examine(neighbourhood) :-
 
 examine("mansion frontyard") :-
         write('You entered mansion frontyard.'), nl, 
-        % write('Mercedes G63 - a quick SUV, capable of driving through more remote terrain.'), nl,
+        % write('Jeep - a quick SUV, capable of driving through more remote terrain.'), nl,
         % write('Porsche 911 - sports coupe, that can go through paved roads very quickly.'), nl,
         % write('BMW M760 - armored version that can withstand gunshots, at cost of not being too fast.'), nl,
         write('There is a pavement leading to the back of the house and a wooden outbuilding on the right side.'), nl,
         write('You also notice 3 cars standing on a driveway: .'), nl.
 
-examine("BMW M760") :-
+examine(bmw) :-
         write('An armored version of this car, that can withstand gunshots, at cost of not being too fast.'), nl.
 
-examine("Mercedes G63") :-
+examine(jeep) :-
         write('A quick SUV, capable of driving through more remote terrain.'), nl.
 
-examine("Porsche 911") :-
+examine(porsche) :-
         write('A sports coupe, that can go through paved roads very quickly.'), nl.
 
-examine("wooden outbuilding") :-
-        write('You are next to the wooden outbilding. There should be some tools beside the entrance to the outbuilding'), nl.
+examine(outbuilding) :-
+        write('You are inside of a wooden outbilding. There should be some tools around you'), nl.
 
 examine("mansion backyard") :-
         write('You silently walk around the house and now are in backyard.'), nl,
         write('You notice an outdoor swimming pool, a cozy garden and a terrace.'), nl.
 
-examine("swimming pool") :-
-        write(), nl.
+examine(pool) :-
+        write('You see a oval-shaped pool with sunbeds in front of it.'), nl,
+        write('There is also a breathtaking view at downtown Los Santos from here.'), nl,
+        write('Owner of this house must be really living the life!'), nl.
 
 examine(garden) :-
-        write(), nl.
+        write('The garden has freshly cut lawns and vibrant flowerbeds.'), nl,
+        write('It''s symmetrically arranged around central fountain.'), nl.
 
 examine(terrace) :-
         write('You take a closer look at the terrace and notice a half-opened window.'), nl,
@@ -457,6 +461,14 @@ examine(fourth_drawer) :-
 
 examine(fifth_drawer) :-
         write('You find a tape'), nl.
+
+examine(crowbar) :-
+        write('You take a closer look at the crowbar'), nl,
+        write('It looks handy. And it''s red!'), nl.
+
+examine(drill) :-
+        write('You see a drill on one of the shelves in front of you'), nl,
+        write('Too bad it''s just a regular drill, not a concrete one...'), nl.
 
 
 
