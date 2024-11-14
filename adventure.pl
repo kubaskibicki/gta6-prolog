@@ -79,9 +79,9 @@ obtainable(windows, "green container").
 
 obtainable(drill, outbuilding_shelf).
 obtainable(crowbar, outbuilding_shelf).
-obtainable("Jeep keys", kitchen).
-obtainable("Porsche keys", kitchen).
-obtainable("BMW keys", kitchen).
+obtainable("Jeep keys", "first drawer").
+obtainable("Porsche keys", "third drawer").
+obtainable("BMW keys", "fifth drawer").
 
 access_code(black20, mansion, "mansion frontyard").
 access_code(crowbar, terrace, house).
