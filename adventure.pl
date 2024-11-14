@@ -79,12 +79,12 @@ obtainable(windows, "green container").
 
 obtainable(drill, outbuilding_shelf).
 obtainable(crowbar, outbuilding_shelf).
-obtainable("Jeep keys", house).
-obtainable("Porsche keys", house).
-obtainable("BMW keys", house).
+obtainable("Jeep keys", kitchen).
+obtainable("Porsche keys", kitchen).
+obtainable("BMW keys", kitchen).
 
 access_code(black20, mansion, "mansion frontyard").
-access_code(crowbar, "mansion backyard", house).
+access_code(crowbar, terrace, house).
 
 leaving("mansion frontyard", mansion).
 leaving(house, "mansion backyard").
@@ -175,6 +175,13 @@ take(Thing) :-
 take(Thing) :-
 	i_am_at(Location),
 	\+ obtainable(Thing, Location),
+	write('There is no '), write(Thing), write(' here.'), nl,
+	!, nl.
+
+take(Thing) :-
+	i_am_at(Location),
+        at(ExactLocation, Location),
+	\+ (checked(ExactLocation); obtainable(Thing, ExactLocation)),
 	write('There is no '), write(Thing), write(' here.'), nl,
 	!, nl.
 
