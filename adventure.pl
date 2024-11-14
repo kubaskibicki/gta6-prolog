@@ -1,12 +1,13 @@
 /* <The name of this game>, by <your name goes here>. */
 
-:- dynamic i_am_at/1, at/2, has/1, knows/3, obtainable/2, access_code/3, leaving/2.
+:- dynamic i_am_at/1, at/2, has/1, knows/3, obtainable/2, access_code/3, leaving/2, checked/1.
 :- dynamic mission/2, mission_completed/1, finish_conditions/2.
 
 :- retractall(at(_, _)), retractall(i_am_at(_)), retractall(alive(_)).
-:- retractall(mission_completed(_)), retractall(has(_)), retractall(access_code(_, _)).
+:- retractall(mission_completed(_)), retractall(has(_)), retractall(access_code(_, _)), retractall(leaving(_, _)), retractall(checked(_)).
 
 has(nothing).
+checked(none).
 
 /* Player's starting location */
 i_am_at(lobby).
@@ -35,6 +36,14 @@ path("mansion frontyard", e, outbuilding).
 path(outbuilding, w, "mansion frontyard").
 path("mansion frontyard", n, "mansion backyard").
 path("mansion backyard", s, "mansion frontyard").
+path("mansion backyard", w, terrace).
+path(terrace, e, "mansion backyard").
+path("mansion backyard", e, pool).
+path(pool, w, "mansion backyard").
+path("mansion backyard", n, garden).
+path(garden, s, "mansion backyard").
+path(house, n, kitchen).
+path(kitchen, s, house).
 
 at("white container", containers).
 at("green container", containers).
@@ -47,31 +56,29 @@ at(supervisor, construction_site_south_gate).
 at(workers, construction_site).
 at(building, construction_site).
 
-at(neighbourhood, mansion).
-at(envelope, mansion).
+% at(neighbourhood, mansion).
+% at(envelope, mansion).
 
 at(bmw, "mansion frontyard").
 at(porsche, "mansion frontyard").
 at(jeep, "mansion frontyard").
 
-at(pool, "mansion backyard").
-at(garden, "mansion backyard").
-at(terrace, "mansion backyard").
+at(outbuilding_shelf, outbuilding).
 
-at(first_drawer, house).
-at(second_drawer, house).
-at(third_drawer, house).
-at(fourth_drawer, house).
-at(fifth_drawer, house).
+at("first drawer", kitchen).
+at("second drawer", kitchen).
+at("third drawer", kitchen).
+at("fourth drawer", kitchen).
+at("fifth drawer", kitchen).
 
-obtainable(beams, containers).
-obtainable(barrow, containers).
-obtainable(hammers, containers).
-obtainable(drill, containers).
-obtainable(windows, containers).
+obtainable(beams, "black container").
+obtainable(barrow, "yellow container").
+obtainable(hammers, "red container").
+obtainable(drill, "blue container").
+obtainable(windows, "green container").
 
-obtainable(drill, outbuilding).
-obtainable(crowbar, outbuilding).
+obtainable(drill, outbuilding_shelf).
+obtainable(crowbar, outbuilding_shelf).
 obtainable("Jeep keys", house).
 obtainable("Porsche keys", house).
 obtainable("BMW keys", house).
@@ -81,6 +88,7 @@ access_code(crowbar, "mansion backyard", house).
 
 leaving("mansion frontyard", mansion).
 leaving(house, "mansion backyard").
+leaving(kitchen, "mansion backyard").
 
 knows(supervisor, building, 'We are building new lifeinvader headquarters').
 knows(supervisor, drill, 'You probably need that drill for heist. I am calling the cops').
@@ -145,12 +153,23 @@ return_to_lobby :-
 /* These rules describe how to pick up an object. */
 take(Thing) :-
 	has(nothing),                  % Gracz nie może mieć nic w ekwipunku
-	i_am_at(Location),             % Lokalizacja gracza
-	obtainable(Thing, Location),   % Przedmiot musi być dostępny w tej lokalizacji
+	i_am_at(Location),              % Lokalizacja gracza
+        obtainable(Thing, Location),       % Przedmiot musi być dostępny w tej lokalizacji
 	retract(has(nothing)),         % Usuwamy informację, że gracz ma pusty ekwipunek
 	assert(has(Thing)),            % Dodajemy przedmiot do ekwipunku
 	write('You took the '), write(Thing), write('.'), nl,
 	!, nl.
+
+take(Thing) :-
+        has(nothing),                  % Gracz nie może mieć nic w ekwipunku
+        obtainable(Thing, ExactLocation),       % Przedmiot musi być dostępny w tej lokalizacji
+        i_am_at(Location),              % Lokalizacja gracza
+        at(ExactLocation, Location),
+        checked(ExactLocation),        % ExactLocation must be checked
+        retract(has(nothing)),         % Usuwamy informację, że gracz ma pusty ekwipunek
+        assert(has(Thing)),            % Dodajemy przedmiot do ekwipunku
+        write('You took the '), write(Thing), write('.'), nl,
+        !, nl.
 
 % Jeżeli w lokalizacji nie ma przedmiotu
 take(Thing) :-
@@ -269,7 +288,8 @@ look :-
 notice_objects_at(Location) :-
         (at(X, Location) ; obtainable(X, Location)),
         write('There is a '), write(X), write(' here.'), nl,
-	fail.
+	fail,
+        !.
 
 notice_objects_at(_).
 
@@ -359,27 +379,44 @@ examine(containers) :-
 
 examine("white container") :-
         write('You take a look inside of the white container'), nl,
-        write('Unfortunately it is empty'), nl.
+        % write('Unfortunately it is empty'), nl.
+        retract(checked(_)),
+        assert(checked("white container")),
+        notice_objects_at("white container"), nl.
         
 examine("black container") :-
         write('You take a quick look inside of the black container'), nl,
-        write('You find few beams inside'), nl.
+        %write('You find few beams inside'), nl,
+        assert(checked("black container")),
+        notice_objects_at("black container"), nl.
 
 examine("red container") :-
         write('You take a glance inside of the red container'), nl,
-        write('You find hammers inside'), nl.
+        % write('You find hammers inside'), nl,
+        retract(checked(_)),
+        assert(checked("red container")),
+        notice_objects_at("red container"), nl.
 
 examine("blue container") :-
         write('You take a glimpse of contents of the blue container'), nl,
-        write('You find drill inside'), nl.
+        % write('You find drill inside'), nl,
+        retract(checked(_)),
+        assert(checked("blue container")),
+        notice_objects_at("blue container"), nl.
 
 examine("green container") :-
         write('You you open the door of the green container'), nl,
-        write('You find windows inside'), nl.
+        % write('You find windows inside'), nl,
+        retract(checked(_)),
+        assert(checked("green container")),
+        notice_objects_at("green container"), nl.
 
 examine("yellow container") :-
         write('You take a look inside of the yellow container'), nl,
-        write('You find a barrow inside'), nl.
+        % write('You find a barrow inside'), nl,
+        retract(checked(_)),
+        assert(checked("yellow container")),
+        notice_objects_at("yellow container"), nl.
 
 
 
@@ -423,7 +460,13 @@ examine(porsche) :-
         write('A sports coupe, that can go through paved roads very quickly.'), nl.
 
 examine(outbuilding) :-
-        write('You are inside of a wooden outbilding. There should be some tools around you'), nl.
+        write('You are inside of a wooden outbilding. You notice a shelf, there should be some tools around you.'), nl.
+
+examine(outbuilding_shelf) :-
+        write('You took a closer look at the shelf.'), nl,
+        % retract(checked(_)),
+        assert(checked(outbuilding_shelf)),
+        notice_objects_at(outbuilding_shelf), nl.
 
 examine("mansion backyard") :-
         write('You silently walk around the house and now are in backyard.'), nl,
@@ -444,23 +487,40 @@ examine(terrace) :-
 
 examine(house) :-
         write('You successfully make it inside the house (and dropped crowbar at the terrace not to arouse suspicion).'), nl,
-        write('You see a very spacious living room connected with the kitchen.'), nl,
-        write('Kitchen has 5 drawers right at the enterance...'), nl.
+        write('You see a very spacious living room connected with the kitchen in front of you.'), nl.
 
-examine(first_drawer) :-
-        write('You find G63 keys'), nl.
+examine(kitchen) :-
+        write('You notice that kitchen has 5 drawers right at the enterance...'), nl.
 
-examine(second_drawer) :-
-        write('You find BMW keys'), nl.
+examine("first drawer") :-
+        write('You took a closer look at the first drawer.'), nl,
+        retract(checked(_)),
+        assert(checked("first drawer")),
+        notice_objects_at("first drawer"), nl.
 
-examine(third_drawer) :-
-        write('You find Porsche keys'), nl.
+examine("second drawer") :-
+        write('You took a closer look at the second drawer.'), nl,
+        retract(checked(_)),
+        assert(checked("first drawer")),
+        notice_objects_at("first drawer"), nl.
 
-examine(fourth_drawer) :-
-        write('You find a knife'), nl.
+examine("third drawer") :-
+        write('You took a closer look at the third drawer.'), nl,
+        retract(checked(_)),
+        assert(checked("first drawer")),
+        notice_objects_at("first drawer"), nl.
 
-examine(fifth_drawer) :-
-        write('You find a tape'), nl.
+examine("fourth drawer") :-
+        write('You took a closer look at the fourth drawer.'), nl,
+        retract(checked(_)),
+        assert(checked("first drawer")),
+        notice_objects_at("first drawer"), nl.
+
+examine("fifth drawer") :-
+        write('You took a closer look at the fifth drawer.'), nl,
+        retract(checked(_)),
+        assert(checked("first drawer")),
+        notice_objects_at("first drawer"), nl.
 
 examine(crowbar) :-
         write('You take a closer look at the crowbar'), nl,
