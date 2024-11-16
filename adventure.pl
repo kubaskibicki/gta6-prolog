@@ -61,7 +61,7 @@ at(bmw, "mansion frontyard").
 at(porsche, "mansion frontyard").
 at(jeep, "mansion frontyard").
 
-at(outbuilding_shelf, outbuilding).
+at(shelf, outbuilding).
 
 at("first drawer", kitchen).
 at("second drawer", kitchen).
@@ -78,8 +78,8 @@ findable(hammers, "red container").
 findable(drill, "blue container").
 findable(windows, "green container").
 
-findable(drill, outbuilding_shelf).
-findable(crowbar, outbuilding_shelf).
+findable(drill, shelf).
+findable(crowbar, shelf).
 findable("Jeep keys", "first drawer").
 findable("Porsche keys", "third drawer").
 findable("BMW keys", "fifth drawer").
@@ -463,9 +463,9 @@ examine(porsche) :-
 examine(outbuilding) :-
         write('You are inside of a wooden outbilding. You notice a shelf, there should be some tools around you.'), nl.
 
-examine(outbuilding_shelf) :-
+examine(shelf) :-
         write('You took a closer look at the shelf.'), nl,
-        notice_objects_inside(outbuilding_shelf), nl.
+        notice_objects_inside(shelf), nl.
 
 examine("mansion backyard") :-
         write('You silently walk around the house and now are in backyard.'), nl,
