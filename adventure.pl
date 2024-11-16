@@ -277,18 +277,21 @@ mention_findable([H|T]) :-
 notice_objects_at(Location) :-
     findall(X, at(X, Location), Objects),
     (
+        nl,
         Objects \= [] ->
         mention_objects(Objects)
     ;   true
     ),
     findall(Person, askable(Person, Location), People),
     (
+        nl,
         People \= [] ->
         mention_people(People)
     ;   true
     ),
     findall(Y, obtainable(Y, Location), Obtainable),
     (
+        nl,
         Obtainable \= [] ->
         mention_obtainable(Obtainable)
     ;   true
@@ -302,7 +305,6 @@ mention_objects([H|T]) :-
 mention_people([]).
 mention_people([H|T]) :-
     write('You meet '), write(H), nl,
-    nl,
     mention_people(T).
 
 mention_obtainable([]).
@@ -510,14 +512,6 @@ examine("fourth drawer") :-
 examine("fifth drawer") :-
         write('You took a closer look at the fifth drawer.'), nl,
         notice_objects_inside("first drawer"), nl.
-
-examine(crowbar) :-
-        write('You take a closer look at the crowbar'), nl,
-        write('It looks handy. And it''s red!'), nl.
-
-examine(drill) :-
-        write('You see a drill on one of the shelves in front of you'), nl,
-        write('Too bad it''s just a regular drill, not a concrete one...'), nl.
 
 examine(gang_hideout) :-
         write('You are at the gang hideout. Find the weapon.'), nl.
