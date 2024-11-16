@@ -1,18 +1,15 @@
 /* <The name of this game>, by <your name goes here>. */
 
-:- dynamic i_am_at/1, at/2, has/1, knows/3, foundable/2, access_code/3, leaving/2, checked/1.
+:- dynamic i_am_at/1, at/2, has/1, knows/3, findable/2, access_code/3, leaving/2.
 :- dynamic mission/2, mission_completed/1, finish_conditions/2, askable/2, obtainable/2.
 
 :- retractall(at(_, _)), retractall(i_am_at(_)), retractall(alive(_)).
-:- retractall(mission_completed(_)), retractall(has(_)), retractall(access_code(_, _)), retractall(leaving(_, _)), retractall(checked(_)).
+:- retractall(mission_completed(_)), retractall(has(_)), retractall(access_code(_, _)), retractall(leaving(_, _)).
 
-/* f it we ball, from now on, foundable means shit lays somewhere undiscovered
+/* f it we ball, from now on, findable means shit lays somewhere undiscovered
 obtainable means shit was found and could be stolen */
 
 has(nothing).
-checked(none).
-
-obtainable(urbitch, construction_site_south_gate).
 
 /* Player's starting location */
 i_am_at(lobby).
@@ -57,11 +54,8 @@ at("red container", containers).
 at("black container", containers).
 at("yellow container", containers).
 
-at(workers, construction_site).
-at(building, construction_site).
-
-% at(neighbourhood, mansion).
-% at(envelope, mansion).
+at(neighbourhood, mansion).
+at(envelope, mansion).
 
 at(bmw, "mansion frontyard").
 at(porsche, "mansion frontyard").
@@ -76,19 +70,19 @@ at("fourth drawer", kitchen).
 at("fifth drawer", kitchen).
 
 askable(supervisor, construction_site_south_gate).
-askable(workers, construction_site).
+askable(worker, construction_site).
 
-foundable(beams, "black container").
-foundable(barrow, "yellow container").
-foundable(hammers, "red container").
-foundable(drill, "blue container").
-foundable(windows, "green container").
+findable(beams, "black container").
+findable(barrow, "yellow container").
+findable(hammers, "red container").
+findable(drill, "blue container").
+findable(windows, "green container").
 
-foundable(drill, outbuilding_shelf).
-foundable(crowbar, outbuilding_shelf).
-foundable("Jeep keys", "first drawer").
-foundable("Porsche keys", "third drawer").
-foundable("BMW keys", "fifth drawer").
+findable(drill, outbuilding_shelf).
+findable(crowbar, outbuilding_shelf).
+findable("Jeep keys", "first drawer").
+findable("Porsche keys", "third drawer").
+findable("BMW keys", "fifth drawer").
 
 access_code(black20, mansion, "mansion frontyard").
 access_code(crowbar, terrace, house).
@@ -164,7 +158,7 @@ take(_) :-
 
 % Jeśli gracz już coś nosi:
 take(_) :-
-    write('You are already carrying something: '),
+    write('You are already carrying something'),
     nl.
 
 
@@ -187,7 +181,7 @@ drop :-
 ask(Person) :-
         i_am_at(Location),
         askable(Person, Location),      % those 2 conditions guarantee that someone can be asked only at Location they are met
-        write(Person), write('says: '), speech(Person),
+        write(Person), write(' says: '), speech(Person),
         !, nl.
 
 ask(_) :-
@@ -258,6 +252,25 @@ look :-
         !, nl.
 
 
+notice_objects_inside(Location) :-
+    findall(Z, findable(Z, Location), Findable),
+    (
+        Findable \= [] ->
+        mention_findable(Findable)
+    ;   true
+    ),
+    !, nl.
+
+mention_findable([]).
+mention_findable([H|T]) :-
+    i_am_at(Location),
+    findable(H, Sub),
+    retract(findable(H, Sub)),
+    write('You discovered '), write(H), nl,
+    assert(obtainable(H, Location)),
+    nl,
+    mention_findable(T).
+
 
 /* These rules set up a loop to mention all the objects
    in your vicinity. */
@@ -284,7 +297,6 @@ notice_objects_at(Location) :-
 mention_objects([]).
 mention_objects([H|T]) :-
     write('There is a '), write(H), write(' here.'), nl,
-    nl,
     mention_objects(T).
 
 mention_people([]).
@@ -296,7 +308,6 @@ mention_people([H|T]) :-
 mention_obtainable([]).
 mention_obtainable([H|T]) :-
     write('There is a '), write(H), write(' laying here.'), nl,
-    nl,
     mention_obtainable(T).
 
 
@@ -386,44 +397,27 @@ examine(containers) :-
 
 examine("white container") :-
         write('You take a look inside of the white container'), nl,
-        % write('Unfortunately it is empty'), nl.
-        retract(checked(_)),
-        assert(checked("white container")),
-        notice_objects_at("white container"), nl.
-        
+        notice_objects_inside("white container"), nl.
+
 examine("black container") :-
         write('You take a quick look inside of the black container'), nl,
-        %write('You find few beams inside'), nl,
-        assert(checked("black container")),
-        notice_objects_at("black container"), nl.
+        notice_objects_inside("black container"), nl.
 
 examine("red container") :-
         write('You take a glance inside of the red container'), nl,
-        % write('You find hammers inside'), nl,
-        retract(checked(_)),
-        assert(checked("red container")),
-        notice_objects_at("red container"), nl.
+        notice_objects_inside("red container"), nl.
 
 examine("blue container") :-
         write('You take a glimpse of contents of the blue container'), nl,
-        % write('You find drill inside'), nl,
-        retract(checked(_)),
-        assert(checked("blue container")),
-        notice_objects_at("blue container"), nl.
+        notice_objects_inside("blue container"), nl.
 
 examine("green container") :-
         write('You open the door of the green container'), nl,
-        % write('You find windows inside'), nl,
-        retract(checked(_)),
-        assert(checked("green container")),
-        notice_objects_at("green container"), nl.
+        notice_objects_inside("green container"), nl.
 
 examine("yellow container") :-
         write('You take a look inside of the yellow container'), nl,
-        % write('You find a barrow inside'), nl,
-        retract(checked(_)),
-        assert(checked("yellow container")),
-        notice_objects_at("yellow container"), nl.
+        notice_objects_inside("yellow container"), nl.
 
 
 
@@ -471,9 +465,7 @@ examine(outbuilding) :-
 
 examine(outbuilding_shelf) :-
         write('You took a closer look at the shelf.'), nl,
-        % retract(checked(_)),
-        assert(checked(outbuilding_shelf)),
-        notice_objects_at(outbuilding_shelf), nl.
+        notice_objects_inside(outbuilding_shelf), nl.
 
 examine("mansion backyard") :-
         write('You silently walk around the house and now are in backyard.'), nl,
@@ -501,33 +493,23 @@ examine(kitchen) :-
 
 examine("first drawer") :-
         write('You took a closer look at the first drawer.'), nl,
-        retract(checked(_)),
-        assert(checked("first drawer")),
-        notice_objects_at("first drawer"), nl.
+        notice_objects_inside("first drawer"), nl.
 
 examine("second drawer") :-
         write('You took a closer look at the second drawer.'), nl,
-        retract(checked(_)),
-        assert(checked("first drawer")),
-        notice_objects_at("first drawer"), nl.
+        notice_objects_inside("first drawer"), nl.
 
 examine("third drawer") :-
         write('You took a closer look at the third drawer.'), nl,
-        retract(checked(_)),
-        assert(checked("first drawer")),
-        notice_objects_at("first drawer"), nl.
+        notice_objects_inside("first drawer"), nl.
 
 examine("fourth drawer") :-
         write('You took a closer look at the fourth drawer.'), nl,
-        retract(checked(_)),
-        assert(checked("first drawer")),
-        notice_objects_at("first drawer"), nl.
+        notice_objects_inside("first drawer"), nl.
 
 examine("fifth drawer") :-
         write('You took a closer look at the fifth drawer.'), nl,
-        retract(checked(_)),
-        assert(checked("first drawer")),
-        notice_objects_at("first drawer"), nl.
+        notice_objects_inside("first drawer"), nl.
 
 examine(crowbar) :-
         write('You take a closer look at the crowbar'), nl,
@@ -543,3 +525,8 @@ examine(gang_hideout) :-
 speech(supervisor) :-
         write('Hey how are you?'), nl,
         write('It''s beautiful weather out there isn''t it?'), nl.
+
+speech(worker) :-
+        write('Hey, you looking for something?'), nl,
+        write('Check out this building, it''s beautiful, isn''t it?'), nl,
+        write('I can''t wait till we finish it!'), nl.
