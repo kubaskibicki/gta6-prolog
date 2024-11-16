@@ -1,7 +1,7 @@
 /* <The name of this game>, by <your name goes here>. */
 
 :- dynamic i_am_at/1, at/2, has/1, knows/3, obtainable/2, access_code/3, leaving/2, checked/1.
-:- dynamic mission/2, mission_completed/1, finish_conditions/2.
+:- dynamic mission/2, mission_completed/1, finish_conditions/2, askable/2.
 
 :- retractall(at(_, _)), retractall(i_am_at(_)), retractall(alive(_)).
 :- retractall(mission_completed(_)), retractall(has(_)), retractall(access_code(_, _)), retractall(leaving(_, _)), retractall(checked(_)).
@@ -52,7 +52,6 @@ at("red container", containers).
 at("black container", containers).
 at("yellow container", containers).
 
-at(supervisor, construction_site_south_gate).
 at(workers, construction_site).
 at(building, construction_site).
 
@@ -70,6 +69,9 @@ at("second drawer", kitchen).
 at("third drawer", kitchen).
 at("fourth drawer", kitchen).
 at("fifth drawer", kitchen).
+
+askable(supervisor, construction_site_south_gate).
+askable(workers, construction_site).
 
 obtainable(beams, "black container").
 obtainable(barrow, "yellow container").
@@ -89,17 +91,6 @@ access_code(crowbar, terrace, house).
 leaving("mansion frontyard", mansion).
 leaving(house, "mansion backyard").
 leaving(kitchen, "mansion backyard").
-
-knows(supervisor, building, 'We are building new lifeinvader headquarters').
-knows(supervisor, drill, 'You probably need that drill for heist. I am calling the cops').
-knows(supervisor, containers, 'What is in those containers? Well, construction equipment. 
-        If I remember correctly, there is a concrete mixer machine in the yellow one, 
-        a concrete drill in the blue one and some steel beams in the white one. 
-        I’m not sure about the other ones though').
-knows(workers, building, 'Doing great! Can’t wait to see this beauty finished! If u need sth, let us know').
-knows(workers, drill, 'Yeah, there should be some old drills in one of our toolboxes on the construction site over there').
-
-
 
 /* Rule of choosing a mission */
 choose_mission(Thing) :-
@@ -209,22 +200,16 @@ drop :-
 
 
 
-ask(Person, Thing) :-
+ask(Person) :-
         i_am_at(Location),
-        at(Person, Location),      % those 2 conditions guarantee that someone can be asked only at Location they are met
-        knows(Person, Thing, Response),
-        write(Person), write('says: '), write(Response),
+        askable(Person, Location),      % those 2 conditions guarantee that someone can be asked only at Location they are met
+        write(Person), write('says: '), speech(Person),
         !, nl.
 
-ask(Person, _) :-
-        i_am_at(Location),
-	at(Person, Location), 
-        write('They don\'t know anything about that.'),
-	!, nl.
-
-
-ask(_, _) :-
+ask(_) :-
         write('There is no such person here'), nl.
+
+
 
 
 
@@ -293,12 +278,28 @@ look :-
 /* These rules set up a loop to mention all the objects
    in your vicinity. */
 notice_objects_at(Location) :-
-        (at(X, Location) ; obtainable(X, Location)),
-        write('There is a '), write(X), write(' here.'), nl,
-	fail,
-        !.
+    findall(X, at(X, Location), Objects),
+    (
+        Objects \= [] ->
+        mention_objects(Objects)
+    ;   true
+    ),
+    findall(Person, askable(Person, Location), People),
+    (
+        People \= [] ->
+        mention_people(People)
+    ;   true
+    ).
 
-notice_objects_at(_).
+mention_objects([]).
+mention_objects([H|T]) :-
+    write('There is a '), write(H), write(' here.'), nl,
+    mention_objects(T).
+
+mention_people([]).
+mention_people([H|T]) :-
+    write('You meet '), write(H), nl,
+    mention_people(T).
 
 
 
@@ -326,15 +327,16 @@ instructions :-
         write('Available commands are:'), nl,
         write('start.             	-- to start the game.'), nl,
         write('n.  s.  e.  w.     	-- to go in that direction.'), nl,
-	write('choose_mission(mission).	-- to start mission.'), nl,
-        write('take(Object).      	-- to pick up an object.'), nl,
-        write('drop(Object).      	-- to put down an object.'), nl,
-        write('enter(Thing, Place)      -- to enter a (probably closed) Place using Thing (tool or code)'), nl,
-        write('leave(Place)             -- to leave a place only if a place was entered with use od enter() command'), nl,
-        write('look.              	-- to look around you again.'), nl,
-        write('instructions.      	-- to see this message again.'), nl,
-        write('ask.              	-- to ask other characters about things.'), nl,
-        write('halt.              	-- to end the game and quit.'), nl,
+	    write('choose_mission(Mission).	-- to start mission.'), nl,
+	    write('finish_mission(Mission).  -- to finish mission (after completing required tasks).'), nl,
+        write('take(Object).      	     -- to pick up an object.'), nl,
+        write('drop(Object).      	     -- to put down an object.'), nl,
+        write('enter(Thing, Place)       -- to enter a (probably closed) Place using Thing (tool or code)'), nl,
+        write('leave(Place)              -- to leave a place only if a place was entered with use od enter() command'), nl,
+        write('look.              	     -- to look around you again.'), nl,
+        write('instructions.      	     -- to see this message again.'), nl,
+        write('ask.              	     -- to ask other characters about things.'), nl,
+        write('halt.              	     -- to end the game and quit.'), nl,
         nl.
 
 
@@ -537,8 +539,9 @@ examine(drill) :-
         write('You see a drill on one of the shelves in front of you'), nl,
         write('Too bad it''s just a regular drill, not a concrete one...'), nl.
 
-
-
 examine(gang_hideout) :-
         write('You are at the gang hideout. Find the weapon.'), nl.
 
+speech(supervisor) :-
+        write('Hey how are you?'), nl,
+        write('It''s beautiful weather out there isn''t it?'), nl.
