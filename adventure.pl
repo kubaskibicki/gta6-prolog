@@ -1,13 +1,18 @@
 /* <The name of this game>, by <your name goes here>. */
 
-:- dynamic i_am_at/1, at/2, has/1, knows/3, obtainable/2, access_code/3, leaving/2, checked/1.
-:- dynamic mission/2, mission_completed/1, finish_conditions/2, askable/2.
+:- dynamic i_am_at/1, at/2, has/1, knows/3, foundable/2, access_code/3, leaving/2, checked/1.
+:- dynamic mission/2, mission_completed/1, finish_conditions/2, askable/2, obtainable/2.
 
 :- retractall(at(_, _)), retractall(i_am_at(_)), retractall(alive(_)).
 :- retractall(mission_completed(_)), retractall(has(_)), retractall(access_code(_, _)), retractall(leaving(_, _)), retractall(checked(_)).
 
+/* f it we ball, from now on, foundable means shit lays somewhere undiscovered
+obtainable means shit was found and could be stolen */
+
 has(nothing).
 checked(none).
+
+obtainable(urbitch, construction_site_south_gate).
 
 /* Player's starting location */
 i_am_at(lobby).
@@ -73,17 +78,17 @@ at("fifth drawer", kitchen).
 askable(supervisor, construction_site_south_gate).
 askable(workers, construction_site).
 
-obtainable(beams, "black container").
-obtainable(barrow, "yellow container").
-obtainable(hammers, "red container").
-obtainable(drill, "blue container").
-obtainable(windows, "green container").
+foundable(beams, "black container").
+foundable(barrow, "yellow container").
+foundable(hammers, "red container").
+foundable(drill, "blue container").
+foundable(windows, "green container").
 
-obtainable(drill, outbuilding_shelf).
-obtainable(crowbar, outbuilding_shelf).
-obtainable("Jeep keys", "first drawer").
-obtainable("Porsche keys", "third drawer").
-obtainable("BMW keys", "fifth drawer").
+foundable(drill, outbuilding_shelf).
+foundable(crowbar, outbuilding_shelf).
+foundable("Jeep keys", "first drawer").
+foundable("Porsche keys", "third drawer").
+foundable("BMW keys", "fifth drawer").
 
 access_code(black20, mansion, "mansion frontyard").
 access_code(crowbar, terrace, house).
@@ -143,49 +148,27 @@ return_to_lobby :-
 
 /* These rules describe how to pick up an object. */
 take(Thing) :-
-	has(nothing),                  % Gracz nie może mieć nic w ekwipunku
-	i_am_at(Location),              % Lokalizacja gracza
-        obtainable(Thing, Location),       % Przedmiot musi być dostępny w tej lokalizacji
-	retract(has(nothing)),         % Usuwamy informację, że gracz ma pusty ekwipunek
-	assert(has(Thing)),            % Dodajemy przedmiot do ekwipunku
-	write('You took the '), write(Thing), write('.'), nl,
-	!, nl.
+    has(nothing),
+    i_am_at(Location),
+    obtainable(Thing, Location),
+    retract(obtainable(Thing, Location)),
+    retract(has(nothing)),
+    assert(has(Thing)),
+    write('You took the '), write(Thing), write('.'), nl,
+    !, nl.
 
-take(Thing) :-
-        has(nothing),                  % Gracz nie może mieć nic w ekwipunku
-        obtainable(Thing, ExactLocation),       % Przedmiot musi być dostępny w tej lokalizacji
-        i_am_at(Location),              % Lokalizacja gracza
-        at(ExactLocation, Location),
-        checked(ExactLocation),        % ExactLocation must be checked
-        retract(has(nothing)),         % Usuwamy informację, że gracz ma pusty ekwipunek
-        assert(has(Thing)),            % Dodajemy przedmiot do ekwipunku
-        write('You took the '), write(Thing), write('.'), nl,
-        !, nl.
-
-% Jeżeli w lokalizacji nie ma przedmiotu
-take(Thing) :-
-	i_am_at(Location),
-	\+ obtainable(Thing, Location),
-	write('There is no '), write(Thing), write(' here.'), nl,
-	!, nl.
-
-take(Thing) :-
-	i_am_at(Location),
-        at(ExactLocation, Location),
-	\+ (checked(ExactLocation); obtainable(Thing, ExactLocation)),
-	write('There is no '), write(Thing), write(' here.'), nl,
-	!, nl.
-
-% Jeżeli gracz już coś nosi, nie może podnieść innego przedmiotu
 take(_) :-
-	has(Something), Something \= nothing,
-	write('You are already carrying something: '), write(Something), write('.'), nl,
-	!, nl.
+    has(nothing),
+    write('There is no such thing here'), nl,
+    !, nl.
 
+% Jeśli gracz już coś nosi:
+take(_) :-
+    write('You are already carrying something: '),
+    nl.
 
 
 /* These rules describe how to put down an object. */
-% Reguła odpowiadająca za upuszczenie przedmiotu
 drop :-
     has(nothing),                 % Jeżeli gracz nic nie posiada
     write('You are not carrying anything to drop.'), nl, !. % Nie można nic upuścić
@@ -196,7 +179,8 @@ drop :-
     retract(has(Thing)),          % Usuwamy przedmiot z ekwipunku
     assert(has(nothing)),         % Zmieniamy stan ekwipunku na "nic"
     assert(obtainable(Thing, Location)), % Dodajemy przedmiot do dostępnych w lokalizacji
-    write('You dropped the '), write(Thing), write(' at location: '), write(Location), nl.
+    write('You dropped the '), write(Thing), write(' here.'), nl.
+
 
 
 
@@ -289,17 +273,31 @@ notice_objects_at(Location) :-
         People \= [] ->
         mention_people(People)
     ;   true
+    ),
+    findall(Y, obtainable(Y, Location), Obtainable),
+    (
+        Obtainable \= [] ->
+        mention_obtainable(Obtainable)
+    ;   true
     ).
 
 mention_objects([]).
 mention_objects([H|T]) :-
     write('There is a '), write(H), write(' here.'), nl,
+    nl,
     mention_objects(T).
 
 mention_people([]).
 mention_people([H|T]) :-
     write('You meet '), write(H), nl,
+    nl,
     mention_people(T).
+
+mention_obtainable([]).
+mention_obtainable([H|T]) :-
+    write('There is a '), write(H), write(' laying here.'), nl,
+    nl,
+    mention_obtainable(T).
 
 
 
@@ -414,7 +412,7 @@ examine("blue container") :-
         notice_objects_at("blue container"), nl.
 
 examine("green container") :-
-        write('You you open the door of the green container'), nl,
+        write('You open the door of the green container'), nl,
         % write('You find windows inside'), nl,
         retract(checked(_)),
         assert(checked("green container")),
@@ -439,7 +437,7 @@ examine(mansion) :-
 examine(envelope) :-
         write('Dear residents of Mayfair St.'), nl,
         write('Due to scheduled replacement of intercoms in upcoming week, we kindly inform you, '), nl,
-        write('that access passwords will be changed to combination of your address’ number and house’s roof colour (example: 3218black).'), nl,
+        write('that access passwords will be changed to combination of your house’s roof colour and address’ number(example: black1234).'), nl,
         write('We are sorry for the inconvenience'), nl, 
         write('Best regards'), nl,
         write('VH housing'), nl.
