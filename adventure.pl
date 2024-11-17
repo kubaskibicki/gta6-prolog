@@ -83,7 +83,7 @@ at("fifth drawer", kitchen).
 at(table, gang_hideout).
 at(lamp, gang_hideout).
 at(painting, gang_hideout).
-at("closed door", gang_hideout).
+at(door, gang_hideout).
 
 askable(supervisor, construction_site_south_gate).
 askable(worker, construction_site).
@@ -112,7 +112,7 @@ obtainable("pepper spray", room).
 access_code(gate, black20, "Vinewood Hills", "mansion frontyard").
 access_code(window, crowbar, terrace, house).
 access_code(safe, 1893, gang_hideout, "safe interior").
-access_code("closed door", "key 7", gang_hideout, room).
+access_code(door, "key 7", gang_hideout, room).
 
 leaving("mansion frontyard", "Vinewood Hills").
 leaving(house, "mansion backyard").
@@ -653,6 +653,12 @@ examine(painting) :-
         write('You also notice hinges on its side, moving painting to the side reveals a hidden safe behind it.'), nl,
         write('You need a code to open it.'), nl,
         assert(at(safe, gang_hideout)),
+        nl, !.
+
+examine(door) :-
+        i_am_at(gang_hideout),
+        write('You take a closer look at closed door to your left.'), nl,
+        write('You can not get through it, you need to find a key to open them.'), nl,
         nl, !.
 
 examine("safe interior") :-
