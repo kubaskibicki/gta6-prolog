@@ -143,7 +143,7 @@ choose_mission(_) :-
 
 
 /* Reguła zakończenia misji */
-finish_mission(Thing) :-
+finish_mission :-
 	i_am_at(Location),
 	has(Thing),
 	finish_conditions(Location, Thing),
@@ -156,7 +156,7 @@ finish_mission(Thing) :-
 	return_to_lobby,
 	!, nl.
     
-finish_mission(_) :-
+finish_mission :-
 	write('You are not at the correct location to complete this mission or did not found the correct object'), nl.
     
 
