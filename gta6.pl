@@ -365,7 +365,6 @@ end_game :-
    routine requests the user to perform the final "halt." */
 finish :-
         nl,
-        write('The game is over.'), nl,
         write('Please enter the "halt." command.'),
         nl.
 
