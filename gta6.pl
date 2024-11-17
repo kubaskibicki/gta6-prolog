@@ -602,25 +602,25 @@ examine("first drawer") :-
 examine("second drawer") :-
         i_am_at(kitchen),
         write('You took a closer look at the second drawer.'), nl,
-        notice_objects_inside("first drawer"),
+        notice_objects_inside("second drawer"),
         nl, !.
 
 examine("third drawer") :-
         i_am_at(kitchen),
         write('You took a closer look at the third drawer.'), nl,
-        notice_objects_inside("first drawer"),
+        notice_objects_inside("third drawer"),
         nl, !.
 
 examine("fourth drawer") :-
         i_am_at(kitchen),
         write('You took a closer look at the fourth drawer.'), nl,
-        notice_objects_inside("first drawer"),
+        notice_objects_inside("fourth drawer"),
         nl, !.
 
 examine("fifth drawer") :-
         i_am_at(kitchen),
         write('You took a closer look at the fifth drawer.'), nl,
-        notice_objects_inside("first drawer"),
+        notice_objects_inside("fifth drawer"),
         nl, !.
 
 
