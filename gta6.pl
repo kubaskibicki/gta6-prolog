@@ -151,6 +151,7 @@ finish_mission(Thing) :-
         retract(mission_completed(CompletedMissions)),
         assert(mission_completed([Thing | CompletedMissions])),
         retract(has(Thing)),
+        assert(has(nothing)),
 	write('You have completed the mission to get the '), write(Thing), write('.'), nl,
 	return_to_lobby,
 	!, nl.
