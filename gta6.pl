@@ -349,7 +349,7 @@ end_game :-
         mission_completed(CompletedMissions),
         member(drill, CompletedMissions),
         (member("Jeep keys", CompletedMissions) ; member("Porsche keys", CompletedMissions) ; member("BMW keys", CompletedMissions)),
-        (member(handgun, CompletedMissions), member(rifle, CompletedMissions)),
+        (member(handgun, CompletedMissions) ; member(rifle, CompletedMissions)),
         write('Congrats, you successfully completed all 3 missions - thanks to you bank robbery was a total success.'), nl,
         finish, !.
 
