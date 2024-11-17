@@ -5,6 +5,7 @@
 
 :- retractall(at(_, _)), retractall(i_am_at(_)), retractall(alive(_)).
 :- retractall(mission_completed(_)), retractall(has(_)), retractall(access_code(_, _)), retractall(leaving(_, _)).
+:- retractall(obtainable(_, _)), retractall(askable(_, _)), retractall(findable(_, _)).
 
 /* f it we ball, from now on, findable means thing lays somewhere undiscovered
 obtainable means thing was found and could be stolen */
@@ -149,6 +150,7 @@ finish_mission(Thing) :-
         mission_completed(CompletedMissions),
         retract(mission_completed(CompletedMissions)),
         assert(mission_completed([Thing | CompletedMissions])),
+        retract(has(Thing)),
 	write('You have completed the mission to get the '), write(Thing), write('.'), nl,
 	return_to_lobby,
 	!, nl.
@@ -201,8 +203,7 @@ drop :-
     retract(has(Thing)),          % Usuwamy przedmiot z ekwipunku
     assert(has(nothing)),         % Zmieniamy stan ekwipunku na "nic"
     assert(obtainable(Thing, Location)), % Dodajemy przedmiot do dostępnych w lokalizacji
-    write('You dropped the '), write(Thing), write(' here.'), nl.
-
+    write('You dropped the '), write(Thing), write(' here.'), nl, !.
 
 
 
@@ -222,8 +223,8 @@ open(Thing, Tool) :-
         access_code(Thing, Tool, Location, Entered_Location),
         at(Thing, Location),
         (findable(Tool, _) ; obtainable(Tool, _) -> has(Tool) ; true),
-        write('Access granted. You are now in '), write(Entered_Location), nl,
-        drop,   % thanks to that any equipment needed to get into some place is left outside that place
+        (has(Tool) -> drop ; true),     % thanks to that any equipment needed to get into some place is left outside that place
+        write('Access granted. You are now in '), write(Entered_Location), nl,   
         retract(i_am_at(Location)),
 	assert(i_am_at(Entered_Location)),
         look,
