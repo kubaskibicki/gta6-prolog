@@ -378,7 +378,7 @@ instructions :-
         write('start.             	-- to start the game.'), nl,
         write('n.  s.  e.  w.     	-- to go in that direction.'), nl,
 	write('choose_mission(Mission).	-- to start mission (options: car, drill, weapon).'), nl,
-	write('finish_mission(Mission). -- to finish mission (after completing required tasks - options: car, drill, weapon).'), nl,
+	write('finish_mission(Mission). -- to finish mission (after completing required tasks - options: car keys, drill, weapon type).'), nl,
         write('take(Object).            -- to pick up an object.'), nl,
         write('drop.            -- to put down an object.'), nl,
         write('open(Thing, Tool/Code).  -- to open a secured (probably closed) Thing (can be gate, window or safe) using Tool or Code)'), nl,
