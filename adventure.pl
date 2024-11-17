@@ -20,7 +20,7 @@ mission_completed([]).
 
 /* Missions definition */
 mission(drill, construction_site_south_gate).
-mission(car, mansion).
+mission(car, "Vinewood Hills").
 mission(weapon, gang_hideout).
 
 finish_conditions(construction_site_south_gate, drill).
@@ -62,9 +62,9 @@ at("red container", containers).
 at("black container", containers).
 at("yellow container", containers).
 
-at(neighbourhood, mansion).
-at(envelope, mansion).
-at(gate, mansion).
+at(neighbourhood, "Vinewood Hills").
+at(envelope, "Vinewood Hills").
+at(gate, "Vinewood Hills").
 
 at(bmw, "mansion frontyard").
 at(porsche, "mansion frontyard").
@@ -94,7 +94,7 @@ findable(hammers, "red container").
 findable(drill, "blue container").
 findable(windows, "green container").
 
-findable(drill, shelf).
+findable(axe, shelf).
 findable(crowbar, shelf).
 findable("Jeep keys", "first drawer").
 findable("Porsche keys", "third drawer").
@@ -109,12 +109,12 @@ obtainable(rifle, room).
 obtainable(knife, room).
 obtainable("pepper spray", room).
 
-access_code(gate, black20, mansion, "mansion frontyard").
+access_code(gate, black20, "Vinewood Hills", "mansion frontyard").
 access_code(window, crowbar, terrace, house).
 access_code(safe, 1893, gang_hideout, "safe interior").
 access_code("closed door", "key 7", gang_hideout, room).
 
-leaving("mansion frontyard", mansion).
+leaving("mansion frontyard", "Vinewood Hills").
 leaving(house, "mansion backyard").
 leaving(kitchen, "mansion backyard").
 leaving("safe interior", gang_hideout).
@@ -347,8 +347,8 @@ mention_obtainable([H|T]) :-
 end_game :-
         mission_completed(CompletedMissions),
         member(drill, CompletedMissions),
-        member(car, CompletedMissions),
-        member(weapon, CompletedMissions),
+        (member("Jeep keys", CompletedMissions) ; member("Porsche keys", CompletedMissions) ; member("BMW keys", CompletedMissions)),
+        (member(handgun, CompletedMissions), member(rifle, CompletedMissions)),
         write('Congrats, you successfully completed all 3 missions - thanks to you bank robbery was a total success.'), nl,
         finish, !.
 
@@ -380,12 +380,13 @@ instructions :-
 	write('choose_mission(Mission).	-- to start mission (options: car, drill, weapon).'), nl,
 	write('finish_mission(Mission). -- to finish mission (after completing required tasks - options: car, drill, weapon).'), nl,
         write('take(Object).            -- to pick up an object.'), nl,
-        write('drop(Object).            -- to put down an object.'), nl,
-        write('open(Thing, Tool/Code)   -- to open a secured (probably closed) Thing (can be gate, window or safe) using Tool or Code)'), nl,
-        write('leave(Place)             -- to leave a place only if a place was entered with use od open() command'), nl,
+        write('drop.            -- to put down an object.'), nl,
+        write('open(Thing, Tool/Code).  -- to open a secured (probably closed) Thing (can be gate, window or safe) using Tool or Code)'), nl,
+        write('leave(Place).            -- to leave a place only if a place was entered with use od open() command'), nl,
+        write('examine(Something).      -- to get more specified description of place or thing if description is known'), nl,
+        write('ask(Person).             -- to ask other characters (specified Person or group) about things.'), nl,
         write('look.              	-- to look around you again.'), nl,
         write('instructions.      	-- to see this message again.'), nl,
-        write('ask(Person).             -- to ask other characters (specified Person or group) about things.'), nl,
         write('end_game.                -- to end game (you win if all missions are complited)'), nl,
         write('halt.              	-- to end the game and quit.'), nl,
         nl.
@@ -486,9 +487,9 @@ examine("yellow container") :-
 
 
 
-examine(mansion) :-
-        i_am_at(mansion),
-        write('You are in front of a luxury mansion in expensive neighbourhood of Los Santos - Vinewood hills.'), nl, 
+examine("Vinewood Hills") :-
+        i_am_at("Vinewood Hills"),
+        write('You are in front of a luxury mansion in expensive neighbourhood of Los Santos - Vinewood Hills.'), nl, 
         write('There is a closed gate, that requires a password.'), nl,
         write('You look around the neighbourhood and notice, that number of the house to the left is 18, '), nl,
         write('and a mailbox with an envelope sticking out of it.'), nl,
@@ -496,7 +497,7 @@ examine(mansion) :-
         nl, !.
 
 examine(envelope) :-
-        i_am_at(mansion),
+        i_am_at("Vinewood Hills"),
         write('Dear residents of Mayfair St.'), nl,
         write('Due to scheduled replacement of intercoms in upcoming week, we kindly inform you, '), nl,
         write('that access password to mansion gate will be changed to combination of your mansion’s roof colour and address’ number(example: black1234).'), nl,
@@ -506,7 +507,7 @@ examine(envelope) :-
         nl, !.
 
 examine(neighbourhood) :-
-        i_am_at(mansion),
+        i_am_at("Vinewood Hills"),
         write('You notice an interesting pattern.'), nl,
         write('Every third house on the other side of the road has a blue roof, other ones have red roofs.'), nl,
         write('What’s more, houses with blue roof have a black-roofed house in front of them, other ones have green roofs.'), nl,
@@ -515,7 +516,7 @@ examine(neighbourhood) :-
         nl, !.
 
 examine(gate) :-
-        i_am_at(mansion),
+        i_am_at("Vinewood Hills"),
         write('The mansion’s gate is secured. You need a password to get through.'),
         nl, !.
 
