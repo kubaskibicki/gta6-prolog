@@ -25,7 +25,9 @@ mission(weapon, gang_hideout).
 finish_conditions(construction_site_south_gate, drill).
 finish_conditions(construction_site_east_gate, drill).
 
-finish_conditions("mansion frontyard", car).
+finish_conditions("mansion frontyard", "Jeep keys").
+finish_conditions("mansion frontyard", "Porsche keys").
+finish_conditions("mansion frontyard", "BMW keys").
 
 finish_conditions(gang_hideout, handgun).
 finish_conditions(room, handgun).
@@ -191,7 +193,7 @@ take(_) :-
 /* These rules describe how to put down an object. */
 drop :-
     has(nothing),                 % Jeżeli gracz nic nie posiada
-    write('You are not carrying anything to drop.'), nl, !. % Nie można nic upuścić
+    write('You are not carrying anything.'), nl, !. % Nie można nic upuścić
 
 drop :-
     has(Thing),                   % Gracz posiada jakiś przedmiot
@@ -374,16 +376,16 @@ instructions :-
         write('Available commands are:'), nl,
         write('start.             	-- to start the game.'), nl,
         write('n.  s.  e.  w.     	-- to go in that direction.'), nl,
-	write('choose_mission(Mission).	-- to start mission.'), nl,
-	write('finish_mission(Mission). -- to finish mission (after completing required tasks).'), nl,
+	write('choose_mission(Mission).	-- to start mission (options: car, drill, weapon).'), nl,
+	write('finish_mission(Mission). -- to finish mission (after completing required tasks - options: car, drill, weapon).'), nl,
         write('take(Object).            -- to pick up an object.'), nl,
         write('drop(Object).            -- to put down an object.'), nl,
         write('open(Thing, Tool/Code)   -- to open a secured (probably closed) Thing (can be gate, window or safe) using Tool or Code)'), nl,
         write('leave(Place)             -- to leave a place only if a place was entered with use od open() command'), nl,
         write('look.              	-- to look around you again.'), nl,
         write('instructions.      	-- to see this message again.'), nl,
-        write('ask.              	-- to ask other characters about things.'), nl,
-        write('end_game                 -- to end game (you win if all missions are complited)'), nl,
+        write('ask(Person).             -- to ask other characters (specified Person or group) about things.'), nl,
+        write('end_game.                -- to end game (you win if all missions are complited)'), nl,
         write('halt.              	-- to end the game and quit.'), nl,
         nl.
 
@@ -414,61 +416,72 @@ start :-
 
 examine(lobby) :-
         i_am_at(lobby),
-        write('You are in the lobby. You can choose a mission: drill, car, or weapon.'), nl.
+        write('You are in the lobby. You can choose a mission: drill, car, or weapon.'),
+        nl, !.
 
 examine(construction_site_south_gate) :-
         i_am_at(construction_site_south_gate),
         write('You are in front of south gate of a construction site.'), nl,
         write('There is a supervisor next to you. You can talk with him.'), nl, 
         write('On the construction site at north there are workers in a building'), nl,
-        write('and containers with various construction equipment. Find the drill.'), nl.
+        write('and containers with various construction equipment. Find the drill.'),
+        nl, !.
 
 examine(construction_site_east_gate) :-
         i_am_at(construction_site_east_gate),
 	write('You reached the east gate of construction site.'), nl,
 	write('There''s not much here, but this place seems like'), nl,
-	write('another escape point'), nl.
+	write('another escape point'),
+        nl, !.
 
 examine(construction_site) :-
         i_am_at(construction_site),
         write('You entered construction site area.'), nl,
         write('There is a row of colorful containers to your right site.'), nl,
         write('You can also take a closer look at construction workers'), nl,
-        write('as well as the uncompleted building on your left.'), nl.
+        write('as well as the uncompleted building on your left.'),
+        nl, !.
 
 examine(containers) :-
         i_am_at(containers),
-        write('You are now standing in front of row of containers.'), nl.
+        write('You are now standing in front of row of containers.'),
+        nl, !.
 
 examine("white container") :-
         i_am_at(containers),
         write('You take a look inside of the white container'), nl,
-        notice_objects_inside("white container"), nl.
+        notice_objects_inside("white container"),
+        nl, !.
 
 examine("black container") :-
         i_am_at(containers),
         write('You take a quick look inside of the black container'), nl,
-        notice_objects_inside("black container"), nl.
+        notice_objects_inside("black container"),
+        nl, !.
 
 examine("red container") :-
         i_am_at(containers),
         write('You take a glance inside of the red container'), nl,
-        notice_objects_inside("red container"), nl.
+        notice_objects_inside("red container"),
+        nl, !.
 
 examine("blue container") :-
         i_am_at(containers),
         write('You take a glimpse of contents of the blue container'), nl,
-        notice_objects_inside("blue container"), nl.
+        notice_objects_inside("blue container"),
+        nl, !.
 
 examine("green container") :-
         i_am_at(containers),
         write('You open the door of the green container'), nl,
-        notice_objects_inside("green container"), nl.
+        notice_objects_inside("green container"),
+        nl, !.
 
 examine("yellow container") :-
         i_am_at(containers),
         write('You take a look inside of the yellow container'), nl,
-        notice_objects_inside("yellow container"), nl.
+        notice_objects_inside("yellow container"),
+        nl, !.
 
 
 
@@ -478,7 +491,8 @@ examine(mansion) :-
         write('There is a closed gate, that requires a password.'), nl,
         write('You look around the neighbourhood and notice, that number of the house to the left is 18, '), nl,
         write('and a mailbox with an envelope sticking out of it.'), nl,
-        write('Find keys to the car you want to steal, take them and go to the choosen car, then you can finish mission'), nl.
+        write('Find keys to the car you want to steal, take them and go to the choosen car, then you can finish mission'),
+        nl, !.
 
 examine(envelope) :-
         i_am_at(mansion),
@@ -487,7 +501,8 @@ examine(envelope) :-
         write('that access password to mansion gate will be changed to combination of your mansion’s roof colour and address’ number(example: black1234).'), nl,
         write('We are sorry for the inconvenience'), nl, 
         write('Best regards'), nl,
-        write('VH housing'), nl.
+        write('VH housing'),
+        nl, !.
 
 examine(neighbourhood) :-
         i_am_at(mansion),
@@ -495,96 +510,116 @@ examine(neighbourhood) :-
         write('Every third house on the other side of the road has a blue roof, other ones have red roofs.'), nl,
         write('What’s more, houses with blue roof have a black-roofed house in front of them, other ones have green roofs.'), nl,
         write('You also notice that the leftmost house on the other side of the road has a blue roof and house number 1.'), nl,
-        write('On one side on the road there are only even house numbers, on the other only odd'), nl.
+        write('On one side on the road there are only even house numbers, on the other only odd'),
+        nl, !.
 
 examine(gate) :-
         i_am_at(mansion),
-        write('The mansion’s gate is secured. You need a password to get through.'), nl.
+        write('The mansion’s gate is secured. You need a password to get through.'),
+        nl, !.
 
 examine("mansion frontyard") :-
         i_am_at("mansion frontyard"),
         write('You entered mansion frontyard.'), nl, 
         write('There is a pavement leading to the back of the house and a wooden outbuilding on the right side.'), nl,
-        write('You also notice 3 cars standing on a driveway: .'), nl.
+        write('You also notice 3 cars standing on a driveway: .'),
+        nl, !.
 
 examine(bmw) :-
         i_am_at("mansion frontyard"),
-        write('An armored version of this car, that can withstand gunshots, at cost of not being too fast.'), nl.
+        write('An armored version of this car, that can withstand gunshots, at cost of not being too fast.'),
+        nl, !.
 
 examine(jeep) :-
         i_am_at("mansion frontyard"),
-        write('A quick SUV, capable of driving through more remote terrain.'), nl.
+        write('A quick SUV, capable of driving through more remote terrain.'),
+        nl, !.
 
 examine(porsche) :-
         i_am_at("mansion frontyard"),
-        write('A sports coupe, that can go through paved roads very quickly.'), nl.
+        write('A sports coupe, that can go through paved roads very quickly.'),
+        nl, !.
 
 examine(outbuilding) :-
-        i_am_at(outbilding),
-        write('You are inside of a wooden outbilding. You notice a shelf, there should be some tools around you.'), nl.
+        i_am_at(outbuilding),
+        write('You are inside of a wooden outbuilding. You notice a shelf, there should be some tools around you.'),
+        nl, !.
 
 examine(shelf) :-
-        i_am_at(outbilding),
+        i_am_at(outbuilding),
         write('You took a closer look at the shelf.'), nl,
-        notice_objects_inside(shelf), nl.
+        notice_objects_inside(shelf),
+        nl, !.
 
 examine("mansion backyard") :-
         i_am_at("mansion backyard"),
         write('You silently walk around the house and now are in backyard.'), nl,
-        write('You notice an outdoor swimming pool, a cozy garden and a terrace.'), nl.
+        write('You notice an outdoor swimming pool on your right, a cozy garden in front of you and a terrace on the left.'),
+        nl, !.
 
 examine(pool) :-
         (i_am_at(pool) ; i_am_at("mansion backyard")),
         write('You see a oval-shaped pool with sunbeds in front of it.'), nl,
         write('There is also a breathtaking view at downtown Los Santos from here.'), nl,
-        write('Owner of this house must be really living the life!'), nl.
+        write('Owner of this house must be really living the life!'),
+        nl, !.
 
 examine(garden) :-
         (i_am_at(garden) ; i_am_at("mansion backyard")),
         write('The garden has freshly cut lawns and vibrant flowerbeds.'), nl,
-        write('It''s symmetrically arranged around central fountain.'), nl.
+        write('It''s symmetrically arranged around central fountain.'),
+        nl, !.
 
 examine(terrace) :-
         (i_am_at(terrace) ; i_am_at("mansion backyard")),
-        write('You take a closer look at the terrace and notice a half-opened window.'), nl.
+        write('You take a closer look at the terrace.'),
+        nl, !.
 
 examine(window) :-
         i_am_at(terrace),
-        write('You can’t go through it, but maybe you can find some useful tools to help yourself with opening it?'), nl.
+        write('The window is half- opened. You can’t go through it, but maybe you can find some useful tools to help yourself with opening it?'),
+        nl, !.
 
 examine(house) :-
         i_am_at(house),
-        write('You successfully make it inside the house (and dropped crowbar at the terrace not to arouse suspicion).'), nl,
-        write('You see a very spacious living room connected with the kitchen in front of you.'), nl.
+        write('You are inside the house (crowbar was dropped at the terrace not to arouse suspicion).'), nl,
+        write('You see a very spacious living room connected with the kitchen in front of you.'),
+        nl, !.
 
 examine(kitchen) :-
         (i_am_at(kitchen) ; i_am_at(house)),
-        write('You notice that kitchen has 5 drawers right at the enterance...'), nl.
+        write('You notice that kitchen has 5 drawers right at the enterance...'),
+        nl, !.
 
 examine("first drawer") :-
         i_am_at(kitchen),
         write('You took a closer look at the first drawer.'), nl,
-        notice_objects_inside("first drawer"), nl.
+        notice_objects_inside("first drawer"),
+        nl, !.
 
 examine("second drawer") :-
         i_am_at(kitchen),
         write('You took a closer look at the second drawer.'), nl,
-        notice_objects_inside("first drawer"), nl.
+        notice_objects_inside("first drawer"),
+        nl, !.
 
 examine("third drawer") :-
         i_am_at(kitchen),
         write('You took a closer look at the third drawer.'), nl,
-        notice_objects_inside("first drawer"), nl.
+        notice_objects_inside("first drawer"),
+        nl, !.
 
 examine("fourth drawer") :-
         i_am_at(kitchen),
         write('You took a closer look at the fourth drawer.'), nl,
-        notice_objects_inside("first drawer"), nl.
+        notice_objects_inside("first drawer"),
+        nl, !.
 
 examine("fifth drawer") :-
         i_am_at(kitchen),
         write('You took a closer look at the fifth drawer.'), nl,
-        notice_objects_inside("first drawer"), nl.
+        notice_objects_inside("first drawer"),
+        nl, !.
 
 
 
@@ -594,61 +629,75 @@ examine(gang_hideout) :-
         write('It’s a middle-sized room with a table in the middle, few chairs and sofas around it.'), nl,
         write('You also notice a table in the corner with a lamp on it and closed door to your left.'), nl,
         write('You turn it on and notice a painting and smoke in the air.'), nl,
-        write('Someone must have been here recently. Search the place and find a weapon.'), nl.
+        write('Someone must have been here recently. Search the place and find a weapon.'),
+        nl, !.
 
 examine(table) :-
         i_am_at(gang_hideout),
         write('You take a closer look at the table.'), nl,
-        write('You notice playing cards, empty liquor bottles and a mirror with suspiciously looking white powder spilled on it.'), nl.
+        write('You notice playing cards, empty liquor bottles and a mirror with suspiciously looking white powder spilled on it.'),
+        nl, !.
 
 examine(lamp) :-
         i_am_at(gang_hideout),
         write('You pick up the lamp.'), nl,
         write('There’s nothing special about it, however when you’re about to put it back, you notice a small note hidden under it.'), nl,
-        write('THE YEAR THE PAINTING WAS CREATED'), nl.
+        write('THE YEAR THE PAINTING WAS CREATED'),
+        nl, !.
   
 examine(painting) :-
         i_am_at(gang_hideout),
         write('After taking a closer look at the painting you identify it as replica of “The Scream” by Edvard Munch.'), nl,
         write('You also notice hinges on its side, moving painting to the side reveals a hidden safe behind it.'), nl,
         write('You need a code to open it.'), nl,
-        assert(at(safe, gang_hideout)).
+        assert(at(safe, gang_hideout)),
+        nl, !.
 
 examine("safe interior") :-
         i_am_at("safe interior"),
         write('It occurs that safe was only an entrance to a hidden room.'), nl,
         write('You notice 3 keys hanging on the wall in fornt of you with labels: "key 7", "key 8", "key 9".'), nl,
-        write('You also see a poster on wall on your left.').
+        write('You also see a poster on wall on your left.'),
+        nl, !.
 
 examine(poster) :-
         i_am_at("safe interior"),
         write('This is an old movie poster - David Fincher’s movie about _ deadly sins. The title is erased.'), nl,
-        write('You notice small message above the erased title - it’s number of deadly sins.'), nl.
+        write('You notice small message above the erased title - it’s number of deadly sins.'),
+        nl, !.
 
 examine(room) :-
         i_am_at(room),
         write('You entered the gang’s weapon magazine. You drooped the key in previous room before entering that one.'), nl,
-        write('You notice a gun cabinet with various weapons inside, including a handgun, a rifle, pepper spray and knife.'), nl.
+        write('You notice a gun cabinet with various weapons inside, including a handgun, a rifle, pepper spray and knife.'),
+        nl, !.
 
 examine(handgun) :-
         i_am_at(Location),
         (obtainable(handgun, Location) ; findable(handgun, Location)),
-        write('That is handgun. It causes a lot of harm'), nl.
+        write('That is handgun. It causes a lot of harm'),
+        nl, !.
 
 examine(rifle) :-
         i_am_at(Location),
         (obtainable(rifle, Location) ; findable(rifle, Location)),
-        write('That is rifle. It is loud and fancy'), nl.
+        write('That is rifle. It is loud and fancy'),
+        nl, !.
 
 examine(knife) :-
         i_am_at(Location),
         (obtainable(knife, Location) ; findable(knife, Location)),
-        write('That is knife. Take it if you like to get dirty at work.'), nl.
+        write('That is knife. Take it if you like to get dirty at work.'),
+        nl, !.
 
 examine("pepper spray") :-
         i_am_at(Location),
         (obtainable("pepper spray", Location) ; findable("pepper spray", Location)),
-        write('That is pepper spray. It is actually quite useless.'), nl.
+        write('That is pepper spray. It is actually quite useless.'),
+        nl, !.
+
+examine(_) :-
+        write('You cannot examine that object here.'), nl.
 
 
 
